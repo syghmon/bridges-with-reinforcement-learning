@@ -1,0 +1,26 @@
+name: "default"
+channels:
+  - conda-forge
+  - pytorch
+  - nvidia
+
+dependencies:
+  - python=3.11
+  - pytorch::pytorch-cuda=11.8
+  - pytorch::pytorch=2.3.0
+  - scikit-image
+  - tqdm
+  - matplotlib
+  - h5py
+  - notebook
+  - ipywidgets
+  - opencv
+  - wandb
+  - pytorch
+  - torchvision
+  - lovely-tensors
+  - scipy=1.11.4  # pinned to make compas_fab work - https://github.com/compas-dev/compas/issues/1269
+  - gymnasium
+  - compas_fab=0.28.0
+  - shapely=2.0.3
+prefix: "/opt/conda"

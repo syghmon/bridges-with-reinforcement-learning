@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<robot name="block_t">
+  <link concave="no" name="block_t_base_link">
+    <contact>
+      <lateral_friction value="0.7"/>
+      <spinning_friction value=".001"/>
+    </contact>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.389711"/>
+      <inertia ixx="0.00014" ixy="0" ixz="0" iyy="0.000262" iyz="0" izz="0.000284"/>
+    </inertial> 
+    <visual>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="package://blocks/v_block.stl"/>
+      </geometry>
+      <material name="blockmat">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="package://blocks/v_block.stl"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>
