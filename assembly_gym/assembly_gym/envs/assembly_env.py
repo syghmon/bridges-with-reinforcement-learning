@@ -4,12 +4,18 @@ import pybullet_data
 import pybullet as p
 from importlib.resources import files
 
-from compas.geometry import Frame, Translation, Rotation, Quaternion, Box
-from compas.robots import RobotModel, LocalPackageMeshLoader
+from compas.geometry import Frame, Translation, Rotation, Quaternion, Box, Scale
+from compas_robots import RobotModel
+from compas_robots.resources import LocalPackageMeshLoader
+
+from compas_assembly.datastructures import Block as CRA_Block
+from compas_cra.datastructures import CRA_Assembly
+from compas_cra.algorithms import assembly_interfaces_numpy
+from compas_cra.equilibrium import cra_solve, cra_penalty_solve, rbe_solve
 
 import assembly_gym
 from assembly_gym.envs.compas_bullet import CompasClient
-from assembly_gym.utils import quaternion_distance, merge_coplanar_faces
+from assembly_gym.utils.geometry import quaternion_distance, merge_coplanar_faces, maximum_tension
 
 
 class Shape:
@@ -33,13 +39,17 @@ class Shape:
         self._target_faces_2d = target_faces_2d
         self._receiving_faces_2d = receiving_faces_2d
 
+    def scale(self, factor):
+        self.mesh.transform(Scale.from_factors([factor, factor, factor]))
+
     def from_mesh(self, mesh, merge_faces=True):
         if merge_faces:
             merge_coplanar_faces(mesh)
         self.mesh = mesh
-        self.bounding_box = Box.from_bounding_box(mesh.bounding_box())
+        self.bounding_box = mesh.aabb()
         self._2d_faces = [face for face in mesh.faces() if np.abs(mesh.face_normal(face)[1]) < 1e-6]
         self._all_faces = self._2d_faces + [face for face in mesh.faces() if face not in self._2d_faces]
+
 
     def from_urdf(self, urdf_file, package='blocks', merge_faces=True):
         if not os.path.exists(urdf_file):
@@ -143,7 +153,7 @@ class AssemblyEnv:
     Assembly environment
     """
 
-    def __init__(self, render=False, bounds=None):
+    def __init__(self, render=False, bounds=None, stability_checks=('rbe')):
         self.obstacles = []
         self.blocks = []
         if bounds is None:
@@ -152,10 +162,14 @@ class AssemblyEnv:
         self._state_info = None
         self.is_block_frozen = False
         self.frozen_block_index = None 
+        self.stability_checks = stability_checks
 
         # create a pybullet client
         self.client = CompasClient(connection_type='gui' if render else 'direct')
         self.client.connect()
+
+        # create cra assembly
+        self.assembly = CRA_Assembly()
         self.reset()
 
     def reset(self, time_step=1/240):
@@ -180,6 +194,9 @@ class AssemblyEnv:
         self.client.setGravity(0, 0, -9.8)
         self.client.setTimeStep(time_step)
         self.client.setRealTimeSimulation(0)  # if it is "1" it will be locked
+
+        # reset the cra assembly
+        self._reset_cra_assembly()
 
     def disconnect_client(self):
         """
@@ -224,24 +241,93 @@ class AssemblyEnv:
         #self.client.changeDynamics(block.object_id, -1, spinningFriction=100.0)
         #self.client.changeDynamics(block.object_id, -1, rollingFriction=.1)
 
+    def _reset_cra_assembly(self):
+        """
+        Reset the CRA assembly by adding the support block and all the blocks in the scene.
+        Note (Johannes, 29.5.2024): I tried to incrementally add blocks to the assembly, but this seems to create artifacts.
+        If the full reset becomes too slow (unlikely), we can revisit this.
+        """
+        self.assembly = CRA_Assembly()
+        width = self.bounds[1][0] - self.bounds[0][0]
+        depth = self.bounds[1][1] - self.bounds[0][1]
+        thickness = 0.05 * width
+        frame = Frame.worldXY().transformed(Translation.from_vector([0.0, 0.0, -thickness/2]))
+        support = Box(width, depth, thickness, frame=frame)
+        self.assembly.add_block(CRA_Block.from_shape(support), node=-1)
+        self.assembly.set_boundary_condition(-1)
+
+        for i, block in enumerate(self.blocks):
+            self.assembly.add_block_from_mesh(block.mesh, node=i)
+
+        if self.is_block_frozen:
+            self.assembly.set_boundary_condition(self.frozen_block_index)
+        
+        if len(self.blocks) > 0:
+            assembly_interfaces_numpy(self.assembly, amin=0.001)
+
+
     def _update_state_info(self):
-        stable, initial_state, final_state = self.is_stable()
         collision, collision_info = self._check_collision()
         self._state_info = {
             "last_block": self.blocks[-1] if self.blocks else None,
-            "stable": stable,
-            "initial_state": initial_state,
-            "final_state": final_state,
             "collision": collision,
             "collision_info": collision_info,
             # "frozen": self.is_frozen(),
             "frozen_block": self.frozen_block_index
         }
-    
+
+
+        # compute stability information
+        if 'pybullet' in self.stability_checks:
+            pybullet_stable, pybullet_initial_state, pybullet_final_state = self.is_stable_pybullet()
+            self._state_info["pybullet_stable"] = pybullet_stable
+            self._state_info["pybullet_initial_state"] = pybullet_initial_state
+            self._state_info["pybullet_final_state"] = pybullet_final_state
+
+            if self.stability_checks[0] == 'pybullet':
+                self._state_info['stable'] = pybullet_stable
+        
+        if 'cra' in self.stability_checks:
+            cra_stable = self.is_stable_cra()
+            self._state_info["cra_stable"] = cra_stable
+
+            if self.stability_checks[0] == 'cra':
+                self._state_info['stable'] = cra_stable
+
+        if 'cra_penalty' in self.stability_checks:
+            cra_penalty_stable = self.is_stable_cra_penalty()
+            self._state_info["cra_penalty_stable"] = cra_penalty_stable
+
+            if self.stability_checks[0] == 'cra_penalty':
+                self._state_info['stable'] = cra_penalty_stable
+
+        if 'rbe' in self.stability_checks:
+            rbe_stable = self.is_stable_rbe()
+            self._state_info["rbe_stable"] = rbe_stable
+
+            if self.stability_checks[0] == 'rbe':
+                self._state_info['stable'] = rbe_stable
+
+        if 'rbe_penalty' in self.stability_checks:
+            rbe_penalty_stable = self.is_stable_rbe_penalty()
+            self._state_info["rbe_penalty_stable"] = rbe_penalty_stable
+
+            if self.stability_checks[0] == 'rbe_penalty':
+                self._state_info['stable'] = rbe_penalty_stable
+
+        #MESSY CODE
+        rbe_stable = self.is_stable_rbe()
+        self._state_info["rbe_stable"] = rbe_stable
+
+        self._state_info['stable'] = rbe_stable
+        #MESSY CODE
+
+
     def add_block(self, block):
         # add block
         self._add_block_to_client(block)
         self.blocks.append(block)
+        self._reset_cra_assembly()
         self._update_state_info()
         return self._state_info
 
@@ -299,8 +385,59 @@ class AssemblyEnv:
 
         return any(collision_info.values()), collision_info
     
+    def is_stable_cra(self, density=0.1, d_bnd=0.05):
+        if self.assembly.graph.number_of_edges() == 0:
+            return True
+        
+        try:
+            cra_solve(self.assembly, density=density, d_bnd=d_bnd)
+        except ValueError as e:
+            if e.args[0] == "infeasible":
+                return False
+            else:
+                raise ValueError(*e.args, 'Error in CRA solve')
+        
+        self._cra_solution_graph = self.assembly.graph.copy()
+        return True
+    
+    def is_stable_cra_penalty(self, density=0.1, d_bnd=0.05, tension_threshold=0.001):
+        if self.assembly.graph.number_of_edges() == 0:
+            return True
+        
+        self._cra_penalty_solution_graph = self.assembly.graph.copy()
+        cra_penalty_solve(self.assembly, density=density, d_bnd=d_bnd)
+        if maximum_tension(self.assembly) > tension_threshold:
+            return False
+        return True
+    
+    def is_stable_rbe(self, density=0.1):
+        if self.assembly.graph.number_of_edges() == 0:
+            return True
+        
+        try:
+            rbe_solve(self.assembly, density=density, penalty=False)
+        except ValueError as e:
+            if e.args[0] == "infeasible":
+                return False
+            else:
+                raise ValueError(*e.args, 'Error in RBE solve')
+        self._rbe_solution_graph = self.assembly.graph.copy()
+        return True
+    
+    def is_stable_rbe_penalty(self, density=0.1, tension_threshold=0.001):
+        if self.assembly.graph.number_of_edges() == 0:
+            return True
 
-    def is_stable(self, distance_threshold=0.02, angle_threshold=0.2):
+        rbe_solve(self.assembly, density=density, penalty=True)
+        if maximum_tension(self.assembly) > tension_threshold:
+            return False
+        self._rbe_penalty_solution_graph = self.assembly.graph.copy()
+        return True
+
+    def is_stable(self):
+        return self._state_info['stable']
+
+    def is_stable_pybullet(self, distance_threshold=0.02, angle_threshold=0.2):
         initial_states = []
         final_states = []
         
@@ -371,6 +508,9 @@ class AssemblyEnv:
         fblock.constraint_id = fixed_constraint
         self._state_info["frozen"] = block_index
         self.client.change_object_color(fblock.object_id, freeze_color)
+
+        self.assembly.set_boundary_condition(block_index)
+
         return fixed_constraint
 
 
@@ -381,6 +521,11 @@ class AssemblyEnv:
             if hasattr(frozen_block, 'constraint_id'):
                 self.client.removeConstraint(frozen_block.constraint_id)
                 del frozen_block.constraint_id
+
+            # remove all boundary conditions and add the boundary condition for the support block back
+            self.assembly.unset_boundary_conditions()
+            self.assembly.set_boundary_condition(-1)
+
         self.is_block_frozen = False
         self.frozen_block_index = None
         self._state_info["frozen_block"] = None

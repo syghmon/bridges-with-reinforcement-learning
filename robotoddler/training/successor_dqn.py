@@ -240,6 +240,13 @@ def rollout_episode(env, policy, policy_net, x_discr_ground, setup_fct, offset_v
     available_actions, action_features = filter_actions(available_actions, action_features, block_features, obstacle_features)
     num_actions = len(available_actions)
 
+
+    print("block_features:", block_features.shape)
+    print("binary_features:", binary_features.shape)
+    print("action_features:", action_features.shape)
+    print("reward_features:", reward_features.shape)
+    print("obstacle_features:", obstacle_features.shape)
+
     while not done:
         # action and environment step
         with torch.no_grad():
@@ -302,78 +309,8 @@ def rollout_episode(env, policy, policy_net, x_discr_ground, setup_fct, offset_v
     return transitions, images
 
 
-def rollout_fixed_episode(env, action_sequence, x_discr_ground, setup_fct, offset_values=[0.], img_size=(64, 64), xlim=(0,1), ylim=(0,1), log_images=False, device=None):
-    """
-    Simulate an episode using a pre-calculated sequence of actions.
-    """
-    done = False
-    transitions = []
-    images = [] if log_images else None
 
-    # environment reset
-    obs, info = env.reset(**setup_fct())
 
-    # initial features and actions
-    reward_features, obstacle_features = get_task_features(obs, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
-    block_features, binary_features = get_state_features(obs, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
-    available_actions = [*generate_actions(env, x_discr_ground=x_discr_ground, offset_values=offset_values)]
-    action_features = get_action_features(env, available_actions, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
-    available_actions, action_features = filter_actions(available_actions, action_features, block_features, obstacle_features)
-    num_actions = len(available_actions)
-    
-    for action in action_sequence:
-        # Generate the action features directly using the provided action
-        selected_action_features = get_action_features(env, [action], img_size=img_size, device=device, xlim=xlim, ylim=ylim)[0]
-
-        next_observation, reward, terminated, truncated, info = env.step(action)
-        done = terminated or truncated
-        # note: we compute our own (linear) reward function here
-        lin_reward = torch.sum(selected_action_features * reward_features)
-
-        # get next features and actions
-        next_block_features, next_binary_features = get_state_features(next_observation, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
-        next_available_actions = [*generate_actions(env, x_discr_ground=x_discr_ground, offset_values=offset_values)]
-        next_action_features = get_action_features(env, next_available_actions, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
-        next_available_actions, next_action_features = filter_actions(next_available_actions, next_action_features, next_block_features, obstacle_features)
-        num_actions = len(next_available_actions)
-
-        # add transition
-        transitions.append(Transition(
-            block_features=block_features.unsqueeze(0),  # add batch dimension
-            binary_features=binary_features.unsqueeze(0),
-            action_features=selected_action_features.unsqueeze(0),
-            reward_features=reward_features.unsqueeze(0),
-            obstacle_features=obstacle_features.unsqueeze(0),
-            action=action,
-            lin_reward=lin_reward.unsqueeze(0),
-            reward=torch.Tensor([reward]),
-            done=done,
-            next_block_features=next_block_features.expand(num_actions, -1, -1, -1),
-            next_binary_features=next_binary_features.expand(num_actions, -1),
-            next_actions_features=next_action_features,
-            next_reward_features=reward_features.expand(num_actions, -1, -1, -1),  # duplicated for convenience
-            next_obstacle_features=obstacle_features.expand(num_actions, -1, -1, -1),  # duplicated for convenience
-            next_available_actions=next_available_actions,
-        ))
-
-        # update features and actions
-        block_features = next_block_features
-        binary_features = next_binary_features
-        action_features = next_action_features
-        available_actions = next_available_actions
-
-        # record additional information
-        if log_images:
-            img_dict = dict()
-            env.assembly_env.simulate(steps=240)
-            img_dict['env_render'] = get_rgb_array(near=0.001, fov=80, far=10, target=[0.5, 0, 0.1], pitch=-20)
-            env.assembly_env.restore()
-            images.append(img_dict)
-
-        if done:
-            break
-
-    return transitions, images
 
 
 def log_episode(episode, transitions, losses, gamma, context='training', policy=None, images=None, log_images=False, wandb_run=None, aim_run=None, verbose=False):
@@ -405,17 +342,66 @@ def log_episode(episode, transitions, losses, gamma, context='training', policy=
         num_transitions = len(transitions)
         num_plots = 6
         fig, axes = plt.subplots(num_transitions, num_plots, figsize=(2 * num_plots, 2 * num_transitions))
+        
+        # Ensure axes is a 2D array
+        if num_transitions == 1:
+            axes = np.expand_dims(axes, 0)
+        elif num_plots == 1:
+            axes = np.expand_dims(axes, -1)
+        
+        print(f"Figure and Axes structure: fig type: {type(fig)}, axes type: {type(axes)}")
+        if isinstance(axes, np.ndarray):
+            print(f"Axes shape: {axes.shape}")
+            print(f"First axes element type: {type(axes[0])}")
+            if isinstance(axes[0], np.ndarray):
+                print(f"First axes element shape: {axes[0].shape}")
+
         for i, t in enumerate(transitions):
             if verbose:
-                print(t.reward[0])
-            axes[i, 0].imshow(t.block_features.squeeze().cpu().numpy(), cmap='gray', vmin=0, vmax=1)
-            axes[i, 1].imshow(t.block_features.squeeze().cpu().numpy() + t.action_features.squeeze().cpu().numpy(), cmap='gray', vmin=0, vmax=1)
-            axes[i, 2].imshow(t.reward_features.squeeze().cpu().numpy(), cmap='gray')
-            axes[i, 3].imshow(t.obstacle_features.squeeze().cpu().numpy(), cmap='gray', vmin=0, vmax=1)
-            if images:
-                axes[i, 4].imshow(images[i]['succ_block_features'], vmin=0, vmax=1,cmap='gray')
-                axes[i, 5].imshow(images[i]['env_render'])
-        
+                print(f"Transition {i}, reward: {t.reward[0]}")
+                print(f"Block features shape: {t.block_features.shape}")
+                print(f"Action features shape: {t.action_features.shape}")
+                print(f"Reward features shape: {t.reward_features.shape}")
+                print(f"Obstacle features shape: {t.obstacle_features.shape}")
+                print(f"Block features data: {t.block_features}")
+                print(f"Action features data: {t.action_features}")
+                print(f"Reward features data: {t.reward_features}")
+                print(f"Obstacle features data: {t.obstacle_features}")
+            
+            # Ensure the features are 2D
+            block_features = t.block_features.squeeze().cpu().numpy()
+            if block_features.ndim == 1:
+                block_features = block_features.reshape(1, -1)
+            
+            action_features = t.action_features.squeeze().cpu().numpy()
+            if action_features.ndim == 1:
+                action_features = action_features.reshape(1, -1)
+            
+            reward_features = t.reward_features.squeeze().cpu().numpy()
+            if reward_features.ndim == 1:
+                reward_features = reward_features.reshape(1, -1)
+            
+            obstacle_features = t.obstacle_features.squeeze().cpu().numpy()
+            if obstacle_features.ndim == 1:
+                obstacle_features = obstacle_features.reshape(1, -1)
+            
+            # Debug prints immediately before imshow
+            print(f"Plotting transition {i}, block features shape: {block_features.shape}")
+            print(f"Plotting transition {i}, action features shape: {action_features.shape}")
+            print(f"Plotting transition {i}, reward features shape: {reward_features.shape}")
+            print(f"Plotting transition {i}, obstacle features shape: {obstacle_features.shape}")
+            try:
+                axes[i, 0].imshow(block_features, cmap='gray', vmin=0, vmax=1)
+                axes[i, 1].imshow(block_features + action_features, cmap='gray', vmin=0, vmax=1)
+                axes[i, 2].imshow(reward_features, cmap='gray')
+                axes[i, 3].imshow(obstacle_features, cmap='gray', vmin=0, vmax=1)
+                if images:
+                    axes[i, 4].imshow(images[i]['succ_block_features'], vmin=0, vmax=1, cmap='gray')
+                    axes[i, 5].imshow(images[i]['env_render'])
+            except IndexError as e:
+                print(f"IndexError occurred at transition {i}: {e}")
+                print(f"axes shape: {axes.shape} | accessing axes[{i}, 0]")
+
         axes[0, 0].set_title('Block Features')
         axes[0, 1].set_title('Next state Features')
         axes[0, 2].set_title('Reward Features')
@@ -445,6 +431,17 @@ def log_episode(episode, transitions, losses, gamma, context='training', policy=
         wandb_run.log(context=context, episode=episode, **log_info)
 
     return log_info, fig
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

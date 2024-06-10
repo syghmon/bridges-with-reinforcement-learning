@@ -1,0 +1,38 @@
+{
+  "@renku_data_type": "renku.domain_model.project.Project",
+  "@renku_oid": "project",
+  "agent_version": "2.6.2",
+  "annotations": [],
+  "creator": {
+    "@renku_data_type": "renku.domain_model.provenance.agent.Person",
+    "@renku_data_value": {
+      "affiliation": null,
+      "alternate_name": null,
+      "email": "luis.salamanca@sdsc.ethz.ch",
+      "id": "mailto:luis.salamanca@sdsc.ethz.ch",
+      "name": "Luis Salamanca"
+    }
+  },
+  "date_created": {
+    "@renku_data_type": "datetime.datetime",
+    "@renku_data_value": "2023-09-07T13:36:18.179928+00:00"
+  },
+  "description": "Repo for the initial developments in the project robotoddler. ",
+  "id": "/projects/luis.salamanca/robotoddler-dev",
+  "keywords": [],
+  "minimum_renku_version": "2.4.0",
+  "name": "robotoddler_dev",
+  "template_metadata": {
+    "@renku_data_type": "renku.domain_model.project.ProjectTemplateMetadata",
+    "@renku_data_value": {
+      "immutable_template_files": [],
+      "metadata": "{\"__template_source__\": \"https://github.com/SwissDataScienceCenter/renku-project-template\", \"__template_ref__\": \"0.7.0\", \"__template_id__\": \"python-minimal\", \"__namespace__\": \"luis.salamanca\", \"__repository__\": \"https://gitlab.renkulab.io\", \"__sanitized_project_name__\": \"robotoddler-dev\", \"__project_slug__\": \"luis.salamanca/robotoddler-dev\", \"__project_description__\": \"Repo for the initial developments in the project robotoddler. \", \"__renku_version__\": \"2.6.2\", \"name\": \"robotoddler_dev\", \"__name__\": \"robotoddler_dev\", \"__template_version__\": \"75b281eefe3b1b34c064363db2c46ecfa70d2ea4\", \"__automated_update__\": true}",
+      "ssh_supported": true,
+      "template_id": "python-minimal",
+      "template_ref": "0.7.0",
+      "template_source": "https://github.com/SwissDataScienceCenter/renku-project-template",
+      "template_version": "75b281eefe3b1b34c064363db2c46ecfa70d2ea4"
+    }
+  },
+  "version": 10
+}

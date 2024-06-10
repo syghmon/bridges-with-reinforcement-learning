@@ -1,12 +1,11 @@
 from collections import namedtuple
 import numpy as np
-import gym
-from gym import spaces
-from compas.geometry import distance_point_point, Quaternion
+import gymnasium as gym
+from compas.geometry import Quaternion
 
 from assembly_gym.envs.assembly_env import AssemblyEnv, Block, Shape
 from assembly_gym.utils import align_frames_2d, distance_box_point
-from assembly_gym.utils.rendering import plot_assembly_env, get_rgb_array
+from assembly_gym.utils.rendering import get_rgb_array
 
 
 def sparse_reward(gym_env, obs, info):
@@ -16,11 +15,28 @@ def sparse_reward(gym_env, obs, info):
     num_targets_reached = len(obs['targets_reached'])
     if not gym_env.all_targets_reached(): 
         return -1 + num_targets_reached
-    return num_targets_reached*1000
 
+    return num_targets_reached
 
-def bridge_setup(H=0.04, num_stories=1):
+def cliff_setup(H=0.04, num_obstacles=5, rescale=1.):
+    # Define the shape
     trapezoid = Shape(urdf_file='shapes/trapezoid.urdf', name="trapezoid")
+    trapezoid.scale(rescale)
+    shapes = [trapezoid]
+
+    # Define the targets and obstacles
+    # In this setup, obstacles are stacked horizontally along the x-axis
+    x_start = 0.1  # starting x position for the obstacles
+    targets = [(x_start + num_obstacles * H, 0, H / 2)]  # target is at the end of the horizontal stack
+    obstacles = [(x_start + i * H, 0, H / 2) for i in range(num_obstacles)]
+
+    return dict(shapes=shapes, obstacles=obstacles, targets=targets)
+
+
+
+def bridge_setup(H=0.04, num_stories=1, rescale=1.):
+    trapezoid = Shape(urdf_file='shapes/trapezoid.urdf', name="trapezoid")
+    trapezoid.scale(rescale)
     shapes = [trapezoid]
     targets = [ (0.5 , 0, num_stories * H + H/2) ]
     obstacles = [(targets[0][0], 0., i*H + H/2) for i in range(num_stories)]
@@ -99,7 +115,7 @@ class AssemblyGym(gym.Env):
         self.reset(shapes, obstacles, targets)  # Set obstacles and targets
 
     def terminated(self, assembly_env):
-        terminated = assembly_env.state_info['collision'] or (self.all_targets_reached() and self.assembly_env.state_info['stable'])
+        terminated = not assembly_env.state_info['stable'] or assembly_env.state_info['collision'] or self.all_targets_reached()
         truncated = self.max_steps and len(self.blocks) >= self.max_steps
         return terminated, truncated
 
@@ -122,7 +138,7 @@ class AssemblyGym(gym.Env):
     def _update_targets(self, new_block):
         targets_reached = []
         for target in self.targets_remaining:
-            if new_block.bounding_box.contains(target):
+            if new_block.bounding_box.contains_point(target):
                 self.targets_reached.append(target)
                 self.targets_remaining.remove(target)
         return targets_reached
@@ -157,8 +173,8 @@ class AssemblyGym(gym.Env):
 
     def _get_info(self):
         return {
-            'blocks_initial_state' : self.assembly_env.state_info['initial_state'],
-            'blocks_final_state' : self.assembly_env.state_info['final_state'],
+            'blocks_initial_state' : self.assembly_env.state_info.get('pybullet_initial_state'),
+            'blocks_final_state' : self.assembly_env.state_info.get('pybullet_final_state'),
         }
     
     # TODO: Previous implementation for refernce, we can do this computation outside the environment to keep the inferface simple
@@ -223,8 +239,8 @@ class AssemblyGym(gym.Env):
         self.block_graph[(action.target_block, action.target_face)].append((new_block_index, action.face))
         self.block_graph[(new_block_index, action.face)] = [(action.target_block, action.target_face)]
 
-        #self.assembly_env.unfreeze_block()
-        #self.assembly_env.freeze_block(len(self.assembly_env.blocks) - 1)
+        self.assembly_env.unfreeze_block()
+        self.assembly_env.freeze_block(len(self.assembly_env.blocks) - 1)
         
         self._update_targets(new_block)
         self._update_action_and_obs_space()

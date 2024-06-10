@@ -1,4 +1,4 @@
-ARG BASE_IMAGE="registry.renkulab.io/kirschnj/docker-images/main/runai-py:2024-04-08"
+ARG BASE_IMAGE="registry.renkulab.io/kirschnj/docker-images/main/runai-py:2024-05-03"
 
 FROM ${BASE_IMAGE}
 

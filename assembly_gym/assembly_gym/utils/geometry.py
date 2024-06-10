@@ -70,13 +70,13 @@ def quaternion_distance(q1, q2):
     """
     Computes the angle between two quaternions
     """
-    return np.arccos(2 * np.dot(q1.unitized().xyzw, q2.unitized().xyzw) ** 2 - 1)
+    return np.arccos(min(2 * np.dot(q1.unitized().xyzw, q2.unitized().xyzw) ** 2 - 1, 1))
 
 def distance_box_point(box, point):
     """
     Computes the distance between a box and a point
     """
-    if box.contains(point):
+    if box.contains_point(point):
         return 0.
 
     return distance_point_point(point, project_point_on_box(box, point))
@@ -98,3 +98,23 @@ def collision_rectangles(pos, state):
     if len(state['obstacles']) > 0 and ((abs(np.array(state['obstacles'])[:,0] - pos[0]) < 0.074) & (abs(np.array(state['obstacles'])[:,2] - pos[2]) < 0.049)).any():
         return True
     return False
+
+def block_vertices_2d(block):
+    for vertex in block.vertices():
+        point = block.vertex_point(vertex)
+        if point[1] > 0:
+            yield (point[0], point[2])
+
+
+def maximum_tension(assembly):
+    max_tension = 0.
+    for edge in assembly.graph.edges():
+        interfaces = assembly.graph.edge_attribute(edge, "interfaces")
+        for interface in interfaces:
+            n = len(interface.points)
+            for i in range(n):
+                force = interface.forces[i]
+                tension = force['c_np'] - force['c_nn']
+                if tension < 0:
+                    max_tension = max(max_tension, -tension)
+    return max_tension

@@ -27,9 +27,14 @@ To run standard DQN with a ConvNet as a Q-network and epsilon greedy for explora
 ```bash
 python robotoddler/training/successor_dqn.py --aim --verbose --batch_size=32 --num_training_steps=25 --evaluate_every=10 --num_episodes=200 --device=cuda --learning_rate=0.0001 --tau=0.01 --gamma=0.95 --seed=2 --tower_height=2 --loss_function=mse_q_values --model=ConvNet
 ```
-This is a very simple task and the training should converge to the optimal policy almost immmediately.
+This is a very simple task and the training should converge to the optimal policy almost immmediately. Q-learning with SucessorMLP:
+```bash
+python robotoddler/training/successor_dqn.py --aim --verbose --batch_size=32 --num_training_steps=25 --evaluate_every=10 --num_episodes=200 --device=cuda --learning_rate=0.0001 --tau=0.01 --gamma=0.95 --seed=2 --tower_height=2 --log_images --loss_function=mse_q_values --model=SuccessorMLP
+```
 
-To solve the same task using successor features, use
+
+
+To solve the same task learning the successor features directly, use
 
 ```bash
 python robotoddler/training/successor_dqn.py --aim --verbose --batch_size=32 --num_training_steps=25 --evaluate_every=10 --num_episodes=500 --device=cuda --learning_rate=0.0001 --tau=0.01 --gamma=0.95 --seed=2 --tower_height=2 --log_images --loss_function=mse_block_features --model=SuccessorMLP
