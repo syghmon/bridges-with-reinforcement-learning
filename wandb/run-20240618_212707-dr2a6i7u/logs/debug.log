@@ -1,0 +1,28 @@
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_setup.py:_flush():76] Current SDK version is 0.16.5
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_setup.py:_flush():76] Configure stats pid to 165111
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_setup.py:_flush():76] Loading settings from /home/simon/.config/wandb/settings
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_setup.py:_flush():76] Loading settings from /home/simon/gitlab/robotoddler-dev/wandb/settings
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_setup.py:_flush():76] Applying setup settings: {'_disable_service': False}
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'robotoddler/training/successor_dqn.py', 'program_abspath': '/home/simon/gitlab/robotoddler-dev/robotoddler/training/successor_dqn.py', 'program': '/home/simon/gitlab/robotoddler-dev/robotoddler/training/successor_dqn.py'}
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_setup.py:_flush():76] Applying login settings: {}
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_init.py:_log_setup():527] Logging user logs to /home/simon/gitlab/robotoddler-dev/wandb/run-20240618_212707-dr2a6i7u/logs/debug.log
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_init.py:_log_setup():528] Logging internal logs to /home/simon/gitlab/robotoddler-dev/wandb/run-20240618_212707-dr2a6i7u/logs/debug-internal.log
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_init.py:init():567] calling init triggers
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_init.py:init():574] wandb.init called with sweep_config: {}
+config: {'num_episodes': 200, 'max_steps': 10, 'seed': 2, 'num_training_steps': 25, 'learning_rate': 0.0001, 'loss_function': 'mse_block_features', 'tau': 0.01, 'batch_size': 32, 'gamma': 0.95, 'model': 'UNet', 'device': 'cpu', 'image_size': (64, 64), 'load_checkpoint': None, 'save_checkpoint': None, 'checkpoint_every': 1000, 'evaluate_every': 10, 'aim': True, 'aim_repo': 'aim-data/', 'tower_height': 2, 'verbose': True, 'log_images': True, 'replay_buffer_capacity': 2000, 'wandb': True}
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_init.py:init():617] starting backend
+2024-06-18 21:27:07,646 INFO    MainThread:165111 [wandb_init.py:init():621] setting up manager
+2024-06-18 21:27:07,647 INFO    MainThread:165111 [backend.py:_multiprocessing_setup():105] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2024-06-18 21:27:07,648 INFO    MainThread:165111 [wandb_init.py:init():629] backend started and connected
+2024-06-18 21:27:07,650 INFO    MainThread:165111 [wandb_init.py:init():721] updated telemetry
+2024-06-18 21:27:07,655 INFO    MainThread:165111 [wandb_init.py:init():754] communicating run to backend with 90.0 second timeout
+2024-06-18 21:27:08,141 INFO    MainThread:165111 [wandb_run.py:_on_init():2344] communicating current version
+2024-06-18 21:27:08,230 INFO    MainThread:165111 [wandb_run.py:_on_init():2353] got version response upgrade_message: "wandb version 0.17.2 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2024-06-18 21:27:08,230 INFO    MainThread:165111 [wandb_init.py:init():805] starting run threads in backend
+2024-06-18 21:27:11,071 INFO    MainThread:165111 [wandb_run.py:_console_start():2323] atexit reg
+2024-06-18 21:27:11,071 INFO    MainThread:165111 [wandb_run.py:_redirect():2178] redirect: wrap_raw
+2024-06-18 21:27:11,071 INFO    MainThread:165111 [wandb_run.py:_redirect():2243] Wrapping output streams.
+2024-06-18 21:27:11,071 INFO    MainThread:165111 [wandb_run.py:_redirect():2268] Redirects installed.
+2024-06-18 21:27:11,072 INFO    MainThread:165111 [wandb_init.py:init():848] run started, returning control to user process

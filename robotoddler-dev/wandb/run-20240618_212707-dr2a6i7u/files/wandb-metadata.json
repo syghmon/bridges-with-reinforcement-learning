@@ -1,0 +1,137 @@
+{
+    "os": "Linux-5.15.0-112-generic-x86_64-with-glibc2.35",
+    "python": "3.10.13",
+    "heartbeatAt": "2024-06-18T19:27:08.284475",
+    "startedAt": "2024-06-18T19:27:07.644997",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "--aim",
+        "--verbose",
+        "--batch_size=32",
+        "--num_training_steps=25",
+        "--evaluate_every=10",
+        "--num_episodes=200",
+        "--device=cpu",
+        "--learning_rate=0.0001",
+        "--tau=0.01",
+        "--gamma=0.95",
+        "--seed=2",
+        "--tower_height=2",
+        "--loss_function=mse_block_features",
+        "--model=UNet",
+        "--wandb=True",
+        "--log_images"
+    ],
+    "state": "running",
+    "program": "/home/simon/gitlab/robotoddler-dev/robotoddler/training/successor_dqn.py",
+    "codePathLocal": "robotoddler/training/successor_dqn.py",
+    "codePath": "robotoddler/training/successor_dqn.py",
+    "git": {
+        "remote": "git@gitlab.renkulab.io:luis.salamanca/robotoddler-dev.git",
+        "commit": "b084393db7ff5326d8f20f584f73da35478d7ff3"
+    },
+    "email": "simonstorf@gmail.com",
+    "root": "/home/simon/gitlab/robotoddler-dev",
+    "host": "netero",
+    "username": "simon",
+    "executable": "/home/simon/anaconda3/envs/dual/bin/python",
+    "cpu_count": 8,
+    "cpu_count_logical": 16,
+    "cpu_freq": {
+        "current": 1628.0488125,
+        "min": 1600.0,
+        "max": 2000.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1558.642,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1690.139,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 1600.0,
+            "min": 1600.0,
+            "max": 2000.0
+        },
+        {
+            "current": 2000.0,
+            "min": 1600.0,
+            "max": 2000.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 467.8895797729492,
+            "used": 92.60770797729492
+        }
+    },
+    "memory": {
+        "total": 14.453765869140625
+    }
+}

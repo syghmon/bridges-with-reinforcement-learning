@@ -1,0 +1,555 @@
+
+  0%|▏                        | 1/200 [00:00<03:13,  1.03it/s, avg_loss=None, collision=0, episode=1, epsilon=0.5, lin_reward=0.000524, num_steps=4, reward=-3.71, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  2%|▎                       | 3/200 [00:03<03:44,  1.14s/it, avg_loss=None, collision=0, episode=3, epsilon=0.499, lin_reward=3.97e-7, num_steps=3, reward=-2.85, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  2%|▍                      | 4/200 [00:04<04:06,  1.26s/it, avg_loss=None, collision=0, episode=4, epsilon=0.498, lin_reward=0.000449, num_steps=5, reward=-4.52, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  2%|▌                       | 5/200 [00:06<04:55,  1.52s/it, avg_loss=None, collision=0, episode=5, epsilon=0.498, lin_reward=0.000537, num_steps=6, reward=-5.3, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  4%|▊                      | 7/200 [00:09<04:08,  1.29s/it, avg_loss=None, collision=0, episode=7, epsilon=0.497, lin_reward=0.000605, num_steps=4, reward=-3.71, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  4%|▉                     | 8/200 [00:42<37:09, 11.61s/it, avg_loss=0.605, collision=0, episode=8, epsilon=0.496, lin_reward=0.000613, num_steps=5, reward=-4.52, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  4%|█                       | 9/200 [01:15<57:51, 18.18s/it, avg_loss=0.552, collision=0, episode=9, epsilon=0.496, lin_reward=0.0239, num_steps=3, reward=-2.85, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  4%|▉                     | 9/200 [01:59<57:51, 18.18s/it, avg_loss=0.524, collision=0, episode=10, epsilon=0.496, lin_reward=0.00214, num_steps=5, reward=-4.52, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  5%|█▉                                    | 10/200 [02:07<1:30:46, 28.67s/it, avg_loss=None, collision=0, episode=0, lin_reward=0.035, num_steps=5, reward=-4.52, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  6%|█                   | 11/200 [02:44<1:38:31, 31.28s/it, avg_loss=0.442, collision=0, episode=11, epsilon=0.495, lin_reward=0.0351, num_steps=5, reward=-4.52, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  6%|█▏                 | 12/200 [03:20<1:42:15, 32.64s/it, avg_loss=0.329, collision=0, episode=12, epsilon=0.495, lin_reward=1.75e-6, num_steps=7, reward=-6.03, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  6%|█▏                 | 13/200 [03:55<1:44:03, 33.39s/it, avg_loss=0.189, collision=0, episode=13, epsilon=0.494, lin_reward=1.51e-6, num_steps=4, reward=-3.71, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  7%|█▍                  | 14/200 [04:30<1:45:05, 33.90s/it, avg_loss=0.163, collision=0, episode=14, epsilon=0.494, lin_reward=0.0004, num_steps=3, reward=-2.85, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  8%|█▍                 | 15/200 [05:08<1:48:06, 35.06s/it, avg_loss=0.0931, collision=0, episode=15, epsilon=0.493, lin_reward=0.0275, num_steps=5, reward=-4.52, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  8%|█▌                 | 16/200 [05:46<1:50:38, 36.08s/it, avg_loss=0.0775, collision=0, episode=16, epsilon=0.493, lin_reward=0.0371, num_steps=5, reward=-4.52, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  8%|█▌                | 17/200 [06:24<1:51:33, 36.58s/it, avg_loss=0.064, collision=0, episode=17, epsilon=0.492, lin_reward=0.000578, num_steps=3, reward=-2.85, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+  9%|█▋                 | 18/200 [07:02<1:51:55, 36.90s/it, avg_loss=0.0591, collision=0, episode=18, epsilon=0.492, lin_reward=0.0239, num_steps=3, reward=-2.85, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+ 10%|█▉                  | 19/200 [07:42<1:54:11, 37.86s/it, avg_loss=0.0536, collision=0, episode=19, epsilon=0.492, lin_reward=0.0348, num_steps=6, reward=-5.3, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+ 10%|█▋                | 19/200 [09:06<1:54:11, 37.86s/it, avg_loss=0.0672, collision=0, episode=20, epsilon=0.491, lin_reward=3.97e-7, num_steps=3, reward=-2.85, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+ 10%|███▋                                 | 20/200 [09:15<2:42:57, 54.32s/it, avg_loss=None, collision=0, episode=0, lin_reward=0.0366, num_steps=5, reward=-4.52, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+ 10%|█▉                | 21/200 [09:54<2:28:56, 49.92s/it, avg_loss=0.0435, collision=0, episode=21, epsilon=0.491, lin_reward=0.00181, num_steps=4, reward=-3.71, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+ 11%|█▉                | 22/200 [10:32<2:17:06, 46.21s/it, avg_loss=0.0558, collision=0, episode=22, epsilon=0.49, lin_reward=0.000585, num_steps=3, reward=-2.85, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+ 12%|██                | 23/200 [11:13<2:11:40, 44.64s/it, avg_loss=0.0542, collision=0, episode=23, epsilon=0.49, lin_reward=0.000577, num_steps=3, reward=-2.85, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+ 12%|██▍                 | 24/200 [11:53<2:06:38, 43.17s/it, avg_loss=0.055, collision=0, episode=24, epsilon=0.489, lin_reward=2.23e-5, num_steps=6, reward=-5.3, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+
+ 12%|██▏              | 25/200 [12:33<2:03:20, 42.29s/it, avg_loss=0.0295, collision=0, episode=25, epsilon=0.489, lin_reward=0.000543, num_steps=4, reward=-3.71, stable=0]
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally
+        infeasible point. Problem may be infeasible.
+WARNING: Loading a SolverResults object with a warning status into
+    model.name="unknown";
+      - termination condition: infeasible
+      - message from solver: Ipopt 3.14.16\x3a Converged to a locally

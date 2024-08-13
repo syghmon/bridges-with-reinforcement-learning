@@ -1,0 +1,54 @@
+variables:
+  GIT_STRATEGY: fetch
+  GIT_SSL_NO_VERIFY: "true"
+  GIT_LFS_SKIP_SMUDGE: 1
+  DOCKER_BUILDKIT: 1
+
+stages:
+  - build
+
+
+image_build_runai:
+  stage: build
+  image: docker:stable
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN http://$CI_REGISTRY
+  script: |
+    CI_COMMIT_SHA_7=$(echo $CI_COMMIT_SHA | cut -c1-7)
+    docker build --tag $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/runai:latest \
+                 --tag $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/runai:$CI_COMMIT_SHA  -f docker/runai/Dockerfile .
+    docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/runai:latest
+    docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/runai:$CI_COMMIT_SHA 
+
+
+image_build_cscs:
+  stage: build
+  image: docker:stable
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN http://$CI_REGISTRY
+  script: |
+    CI_COMMIT_SHA_7=$(echo $CI_COMMIT_SHA | cut -c1-7)
+    DATE=$(date +%Y-%m-%d)
+    docker build --tag $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/cscs:latest \
+                 --tag $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/cscs:$DATE \
+                 --tag $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/cscs:$CI_COMMIT_SHA  -f docker/cscs/Dockerfile .
+    docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/cscs:latest
+    docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/cscs:$CI_COMMIT_SHA 
+    docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/cscs:$DATE 
+
+#
+#image_build_renku:
+#  stage: build
+#  image: docker:stable
+#  before_script:
+#    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN http://$CI_REGISTRY
+#  script: |
+#    CI_COMMIT_SHA_7=$(echo $CI_COMMIT_SHA | cut -c1-7)
+#    docker build  --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA_7 \
+#                  --tag $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/renku:latest \
+#                  --tag $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/renku:$CI_COMMIT_SHA_7 \
+#                  -f docker/renku/Dockerfile .
+#    docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/renku:latest
+#    docker push $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH/renku:$CI_COMMIT_SHA_7
+#    docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA_7
+#

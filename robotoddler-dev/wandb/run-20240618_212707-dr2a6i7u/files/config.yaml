@@ -1,0 +1,99 @@
+wandb_version: 1
+
+num_episodes:
+  desc: null
+  value: 200
+max_steps:
+  desc: null
+  value: 10
+seed:
+  desc: null
+  value: 2
+num_training_steps:
+  desc: null
+  value: 25
+learning_rate:
+  desc: null
+  value: 0.0001
+loss_function:
+  desc: null
+  value: mse_block_features
+tau:
+  desc: null
+  value: 0.01
+batch_size:
+  desc: null
+  value: 32
+gamma:
+  desc: null
+  value: 0.95
+model:
+  desc: null
+  value: UNet
+device:
+  desc: null
+  value: cpu
+image_size:
+  desc: null
+  value:
+  - 64
+  - 64
+load_checkpoint:
+  desc: null
+  value: null
+save_checkpoint:
+  desc: null
+  value: null
+checkpoint_every:
+  desc: null
+  value: 1000
+evaluate_every:
+  desc: null
+  value: 10
+aim:
+  desc: null
+  value: true
+aim_repo:
+  desc: null
+  value: aim-data/
+tower_height:
+  desc: null
+  value: 2
+verbose:
+  desc: null
+  value: true
+log_images:
+  desc: null
+  value: true
+replay_buffer_capacity:
+  desc: null
+  value: 2000
+wandb:
+  desc: null
+  value: true
+_wandb:
+  desc: null
+  value:
+    python_version: 3.10.13
+    cli_version: 0.16.5
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1718738827.0
+    t:
+      1:
+      - 1
+      - 55
+      - 105
+      2:
+      - 1
+      - 55
+      - 105
+      3:
+      - 16
+      - 23
+      4: 3.10.13
+      5: 0.16.5
+      8:
+      - 5
+      13: linux-x86_64

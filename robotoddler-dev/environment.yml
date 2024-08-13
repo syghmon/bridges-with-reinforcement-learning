@@ -1,0 +1,16 @@
+name: "default"
+channels:
+  - conda-forge
+  - pytorch
+
+dependencies:
+  - python=3.11
+  - tqdm
+  - matplotlib
+  - notebook
+  - ipywidgets
+  - wandb
+  - pytorch
+  - torchvision
+  - gymnasium
+prefix: "/opt/conda"

@@ -1,0 +1,106 @@
+2024/05/27-19:31:55.925622 140247469241408 [/db_impl/db_impl_open.cc:200] file size check will be skipped during open.
+2024/05/27-19:31:55.925694 140247469241408 RocksDB version: 6.29.5
+2024/05/27-19:31:55.925700 140247469241408 Compile date 2023-03-02 19:33:03
+2024/05/27-19:31:55.925703 140247469241408 DB SUMMARY
+2024/05/27-19:31:55.925705 140247469241408 DB Session ID:  OSS2IFP5FNET7V06JS5X
+2024/05/27-19:31:55.925734 140247469241408 CURRENT file:  CURRENT
+2024/05/27-19:31:55.925737 140247469241408 IDENTITY file:  IDENTITY
+2024/05/27-19:31:55.925743 140247469241408 MANIFEST file:  MANIFEST-000004 size: 1086 Bytes
+2024/05/27-19:31:55.925746 140247469241408 SST files in /home/simon/gitlab/robotoddler-dev/notebooks/.aim/meta/chunks/0847db43f5bc41e7b4549d98 dir, Total Num: 5, files: 000009.sst 000011.sst 000013.sst 000015.sst 000017.sst 
+2024/05/27-19:31:55.925748 140247469241408 Write Ahead Log file in /home/simon/gitlab/robotoddler-dev/notebooks/.aim/meta/chunks/0847db43f5bc41e7b4549d98: 000016.log size: 414381 ; 
+2024/05/27-19:31:55.925752 140247469241408                         Options.error_if_exists: 0
+2024/05/27-19:31:55.925754 140247469241408                       Options.create_if_missing: 1
+2024/05/27-19:31:55.925757 140247469241408                         Options.paranoid_checks: 0
+2024/05/27-19:31:55.925759 140247469241408             Options.flush_verify_memtable_count: 1
+2024/05/27-19:31:55.925760 140247469241408                               Options.track_and_verify_wals_in_manifest: 0
+2024/05/27-19:31:55.925762 140247469241408                                     Options.env: 0x7f8de6d1d940
+2024/05/27-19:31:55.925763 140247469241408                                      Options.fs: PosixFileSystem
+2024/05/27-19:31:55.925765 140247469241408                                Options.info_log: 0x4612f80
+2024/05/27-19:31:55.925766 140247469241408                Options.max_file_opening_threads: 16
+2024/05/27-19:31:55.925768 140247469241408                              Options.statistics: (nil)
+2024/05/27-19:31:55.925770 140247469241408                               Options.use_fsync: 0
+2024/05/27-19:31:55.925771 140247469241408                       Options.max_log_file_size: 0
+2024/05/27-19:31:55.925773 140247469241408                  Options.max_manifest_file_size: 1073741824
+2024/05/27-19:31:55.925774 140247469241408                   Options.log_file_time_to_roll: 0
+2024/05/27-19:31:55.925776 140247469241408                       Options.keep_log_file_num: 10
+2024/05/27-19:31:55.925778 140247469241408                    Options.recycle_log_file_num: 0
+2024/05/27-19:31:55.925779 140247469241408                         Options.allow_fallocate: 1
+2024/05/27-19:31:55.925781 140247469241408                        Options.allow_mmap_reads: 0
+2024/05/27-19:31:55.925782 140247469241408                       Options.allow_mmap_writes: 0
+2024/05/27-19:31:55.925785 140247469241408                        Options.use_direct_reads: 0
+2024/05/27-19:31:55.925786 140247469241408                        Options.use_direct_io_for_flush_and_compaction: 0
+2024/05/27-19:31:55.925789 140247469241408          Options.create_missing_column_families: 0
+2024/05/27-19:31:55.925791 140247469241408                              Options.db_log_dir: 
+2024/05/27-19:31:55.925793 140247469241408                                 Options.wal_dir: 
+2024/05/27-19:31:55.925795 140247469241408                Options.table_cache_numshardbits: 6
+2024/05/27-19:31:55.925797 140247469241408                         Options.WAL_ttl_seconds: 0
+2024/05/27-19:31:55.925799 140247469241408                       Options.WAL_size_limit_MB: 0
+2024/05/27-19:31:55.925801 140247469241408                        Options.max_write_batch_group_size_bytes: 1048576
+2024/05/27-19:31:55.925802 140247469241408             Options.manifest_preallocation_size: 4194304
+2024/05/27-19:31:55.925804 140247469241408                     Options.is_fd_close_on_exec: 1
+2024/05/27-19:31:55.925806 140247469241408                   Options.advise_random_on_open: 1
+2024/05/27-19:31:55.925808 140247469241408                   Options.experimental_mempurge_threshold: 0.000000
+2024/05/27-19:31:55.925812 140247469241408                    Options.db_write_buffer_size: 1048576
+2024/05/27-19:31:55.925823 140247469241408                    Options.write_buffer_manager: 0x366d660
+2024/05/27-19:31:55.925824 140247469241408         Options.access_hint_on_compaction_start: 1
+2024/05/27-19:31:55.925826 140247469241408  Options.new_table_reader_for_compaction_inputs: 0
+2024/05/27-19:31:55.925828 140247469241408           Options.random_access_max_buffer_size: 1048576
+2024/05/27-19:31:55.925830 140247469241408                      Options.use_adaptive_mutex: 0
+2024/05/27-19:31:55.925831 140247469241408                            Options.rate_limiter: (nil)
+2024/05/27-19:31:55.925833 140247469241408     Options.sst_file_manager.rate_bytes_per_sec: 0
+2024/05/27-19:31:55.925834 140247469241408                       Options.wal_recovery_mode: 2
+2024/05/27-19:31:55.925836 140247469241408                  Options.enable_thread_tracking: 0
+2024/05/27-19:31:55.925838 140247469241408                  Options.enable_pipelined_write: 0
+2024/05/27-19:31:55.925840 140247469241408                  Options.unordered_write: 0
+2024/05/27-19:31:55.925841 140247469241408         Options.allow_concurrent_memtable_write: 1
+2024/05/27-19:31:55.925843 140247469241408      Options.enable_write_thread_adaptive_yield: 1
+2024/05/27-19:31:55.925845 140247469241408             Options.write_thread_max_yield_usec: 100
+2024/05/27-19:31:55.925847 140247469241408            Options.write_thread_slow_yield_usec: 3
+2024/05/27-19:31:55.925848 140247469241408                               Options.row_cache: None
+2024/05/27-19:31:55.925849 140247469241408                              Options.wal_filter: None
+2024/05/27-19:31:55.925852 140247469241408             Options.avoid_flush_during_recovery: 0
+2024/05/27-19:31:55.925855 140247469241408             Options.allow_ingest_behind: 0
+2024/05/27-19:31:55.925857 140247469241408             Options.preserve_deletes: 0
+2024/05/27-19:31:55.925860 140247469241408             Options.two_write_queues: 0
+2024/05/27-19:31:55.925862 140247469241408             Options.manual_wal_flush: 0
+2024/05/27-19:31:55.925864 140247469241408             Options.atomic_flush: 0
+2024/05/27-19:31:55.925867 140247469241408             Options.avoid_unnecessary_blocking_io: 0
+2024/05/27-19:31:55.925869 140247469241408                 Options.persist_stats_to_disk: 0
+2024/05/27-19:31:55.925871 140247469241408                 Options.write_dbid_to_manifest: 0
+2024/05/27-19:31:55.925873 140247469241408                 Options.log_readahead_size: 0
+2024/05/27-19:31:55.925876 140247469241408                 Options.file_checksum_gen_factory: Unknown
+2024/05/27-19:31:55.925878 140247469241408                 Options.best_efforts_recovery: 0
+2024/05/27-19:31:55.925880 140247469241408                Options.max_bgerror_resume_count: 2147483647
+2024/05/27-19:31:55.925882 140247469241408            Options.bgerror_resume_retry_interval: 1000000
+2024/05/27-19:31:55.925885 140247469241408             Options.allow_data_in_errors: 0
+2024/05/27-19:31:55.925887 140247469241408             Options.db_host_id: __hostname__
+2024/05/27-19:31:55.925890 140247469241408             Options.max_background_jobs: 2
+2024/05/27-19:31:55.925892 140247469241408             Options.max_background_compactions: 4
+2024/05/27-19:31:55.925894 140247469241408             Options.max_subcompactions: 1
+2024/05/27-19:31:55.925896 140247469241408             Options.avoid_flush_during_shutdown: 0
+2024/05/27-19:31:55.925898 140247469241408           Options.writable_file_max_buffer_size: 1048576
+2024/05/27-19:31:55.925900 140247469241408             Options.delayed_write_rate : 16777216
+2024/05/27-19:31:55.925903 140247469241408             Options.max_total_wal_size: 0
+2024/05/27-19:31:55.925905 140247469241408             Options.delete_obsolete_files_period_micros: 21600000000
+2024/05/27-19:31:55.925908 140247469241408                   Options.stats_dump_period_sec: 600
+2024/05/27-19:31:55.925909 140247469241408                 Options.stats_persist_period_sec: 600
+2024/05/27-19:31:55.925911 140247469241408                 Options.stats_history_buffer_size: 1048576
+2024/05/27-19:31:55.925919 140247469241408                          Options.max_open_files: -1
+2024/05/27-19:31:55.925921 140247469241408                          Options.bytes_per_sync: 0
+2024/05/27-19:31:55.925923 140247469241408                      Options.wal_bytes_per_sync: 0
+2024/05/27-19:31:55.925925 140247469241408                   Options.strict_bytes_per_sync: 0
+2024/05/27-19:31:55.925927 140247469241408       Options.compaction_readahead_size: 0
+2024/05/27-19:31:55.925929 140247469241408                  Options.max_background_flushes: -1
+2024/05/27-19:31:55.925931 140247469241408 Compression algorithms supported:
+2024/05/27-19:31:55.925933 140247469241408 	kZSTDNotFinalCompression supported: 1
+2024/05/27-19:31:55.925936 140247469241408 	kZSTD supported: 1
+2024/05/27-19:31:55.925938 140247469241408 	kXpressCompression supported: 0
+2024/05/27-19:31:55.925940 140247469241408 	kLZ4HCCompression supported: 0
+2024/05/27-19:31:55.925942 140247469241408 	kLZ4Compression supported: 0
+2024/05/27-19:31:55.925944 140247469241408 	kBZip2Compression supported: 1
+2024/05/27-19:31:55.925946 140247469241408 	kZlibCompression supported: 1
+2024/05/27-19:31:55.925948 140247469241408 	kSnappyCompression supported: 1
+2024/05/27-19:31:55.925950 140247469241408 Fast CRC32 supported: Not supported on x86
+2024/05/27-19:31:55.925979 140247469241408 [WARN] [/db_impl/db_impl_open.cc:1907] Persisting Option File error: OK
+2024/05/27-19:31:55.925987 140247469241408 [/db_impl/db_impl.cc:482] Shutdown: canceling all background work
+2024/05/27-19:31:55.926000 140247469241408 [/db_impl/db_impl.cc:699] Shutdown complete

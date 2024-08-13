@@ -1,0 +1,9 @@
+pybullet==3.2.6
+compas==2.1.1
+compas_assembly==0.7.1
+compas_fab==1.0.2
+# compas_cra==0.4.0
+git+https://github.com/kirschnj/compas_cra
+compas_robots==0.4.0
+pyomo==6.4.2
+aim
