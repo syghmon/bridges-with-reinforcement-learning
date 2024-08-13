@@ -9,5 +9,10 @@ setup(
         # "compas-fab==0.28.0",
         # "gym==0.26.2",
         # "shapely==2.0.3",
-    ]
+    ],
+    entry_points={
+        "console_scripts": [
+            "assembly_tests=assembly_gym.utils.test_suite:main",
+        ]
+    }
 )

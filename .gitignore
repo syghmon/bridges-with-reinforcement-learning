@@ -338,6 +338,7 @@ tags
 .renku/cache
 
 aim-data
+wandb
 
 .idea
 .aim

@@ -4,7 +4,7 @@ import numpy as np
 from assembly_gym.envs.gym_env import Action, AssemblyGym
 
 
-def generate_actions(gym : AssemblyGym, x_discr_ground, offset_values=None, max_angle_rad=np.pi/2-0.01, max_blocks_per_face=1, include_frozen=False, x_block_offset=None):
+def generate_actions(gym : AssemblyGym, x_discr_ground, offset_values=None, max_angle_rad=2*np.pi+0.1, max_blocks_per_face=1, include_frozen=False, x_block_offset=None):
     """
     This is a generator for all possible actions in the assembly environment.
     It will skip actions that are not feasible, e.g. because the block would be placed at an angle that is too steep
@@ -68,14 +68,14 @@ def _get_block_index(self, blocks, target_shape, target_shape_index):
     return target_shape_index
 
 
-def filter_actions(available_actions, action_features, block_features, obstacle_features):
+def filter_actions(gym_env, available_actions, action_features, block_features, obstacle_features, xlim, ylim):
     """ 
-    Filter available actions based on immediate collisions by checking image overlap.
+    Filter available actions based on immediate collisions.
     """
     mask = torch.zeros(len(available_actions), dtype=bool)
     reduced_available_actions= []
     for i, action in enumerate(available_actions):
-        if torch.sum(action_features[i] * block_features) == 0 and torch.sum(action_features[i] * obstacle_features) == 0:
+        if not gym_env.collision_on_action(action,xlim,ylim) and torch.sum(action_features[i] * block_features) == 0 and torch.sum(action_features[i] * obstacle_features) == 0:
             mask[i] = True
             reduced_available_actions.append(action)
     

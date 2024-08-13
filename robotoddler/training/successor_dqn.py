@@ -9,16 +9,19 @@ import argparse
 import os
 import aim
 
-from assembly_gym.envs.gym_env import AssemblyGym, sparse_reward, tower_setup, hard_tower_setup, bridge_setup
+from assembly_gym.envs.gym_env import AssemblyGym, sparse_reward, tower_setup, hard_tower_setup, bridge_setup, horizontal_bridge_setup
 from assembly_gym.envs.assembly_env import AssemblyEnv, Block, Shape
-from assembly_gym.utils.rendering import get_rgb_array, render_assembly_env, render_blocks_2d
+from assembly_gym.utils.rendering import get_rgb_array, plot_cra_assembly, render_assembly_env, render_blocks_2d
 
-from robotoddler.utils.replay_memory import ReplayBuffer
+from robotoddler.utils.replay_memory import ReplayBuffer,PrioritizedReplayBuffer
 from robotoddler.utils.utils import init_weights, parse_img_size, load_checkpoint, save_checkpoint, optimizer_to, convolve_with_gaussian
 from robotoddler.models.cv import ConvNet, SuccessorMLP, UNet, Policy
 from robotoddler.utils.actions import generate_actions, filter_actions
 
 import torch.nn.functional as F
+import wandb
+
+
 
 
 Transition = namedtuple('Transition',
@@ -37,6 +40,7 @@ Transition = namedtuple('Transition',
                          'next_actions_features',
                          'next_reward_features',  # duplicated for convenience
                          'next_obstacle_features',  # duplicated for convenience
+                         'td_error'  # Add TD error
                          ))
 
 
@@ -45,6 +49,7 @@ def get_state_features(observation, xlim=(0, 1), ylim=(0, 1), img_size=(512,512)
     Get the state features for the observation.
     Returns the image state features and additional binary features.
     """
+
     binary_features = np.array([
         observation['stable'],
         observation['collision'], # ToDo obstacle vs block collision
@@ -65,12 +70,15 @@ def get_task_features(obs, xlim=(0, 1), ylim=(0, 1), img_size=(512,512), device=
     Returns the image features for the obstacles and the targets.
     """
     # reward features
-    cube = Shape(urdf_file='shapes/cube.urdf')
+    cube = Shape(urdf_file='shapes/cube06.urdf')
     target_blocks = [Block(shape=cube, position=target) for target in obs['targets']]
+    
+
     reward_features = render_blocks_2d(target_blocks, xlim=xlim, ylim=ylim, img_size=img_size).astype(np.float32)
-    reward_features /= np.sum(reward_features)
-    kernel_size = 31 # Needs to be odd !!!
-    sigma = 4
+
+    #reward_features /= np.sum(reward_features)
+    kernel_size = 101 # Needs to be odd !!!
+    sigma = 16
     reward_features = convolve_with_gaussian(torch.Tensor(reward_features), kernel_size, sigma)
     # obstacle features
     obstacle_features = render_blocks_2d(obs['obstacle_blocks'], xlim=xlim, ylim=ylim, img_size=img_size)
@@ -81,25 +89,69 @@ def get_action_features(env, actions, xlim=(0,1), ylim=(0, 1), img_size=(512,512
     """
     Get the action feature images.
     """
+
     blocks = [env.create_block(action) for action in actions]
     return torch.Tensor(np.array([render_blocks_2d([block], xlim=xlim, ylim=ylim, img_size=img_size) for block in blocks])).unsqueeze(1).to(device)
 
 
+
 class EpsilonGreedy:
-    def __init__(self, eps_start=0.5, eps_end=0.05, gamma=0.99, episode=0):
+    def __init__(self, eps_start=0.5, eps_end=0.05, gamma=0.99, episode=0, max_steps=10, device=torch.device('cpu')):
         self.epsilon = (eps_start - eps_end) * (gamma ** episode) + eps_end
         self.eps_start = eps_start
         self.eps_end = eps_end
         self.gamma = gamma
+        self.max_steps = max_steps
+        self.device = device
+        self.step_images = [torch.zeros(64, 64, device=device) for _ in range(max_steps)]  # Assuming image size is (64, 64)
 
     def step(self):
         self.epsilon = (self.epsilon - self.eps_end) * self.gamma + self.eps_end
         return self
 
-    def __call__(self, q_values, *args, **kwargs):
+    def __call__(self, q_values, step_index, action_features, *args, **kwargs):
         if random.random() > self.epsilon:
-            return torch.argmax(q_values).item()
-        return random.randint(0, len(q_values)-1)
+            selected_action_index = torch.argmax(q_values).item()
+        else:
+            # Calculate the join score for each action
+            join_scores = []
+            for i in range(len(action_features)):
+                action_feature = action_features[i].squeeze(0).to(self.device)
+                join_score = torch.sum(self.step_images[step_index] * action_feature).item()
+                join_scores.append(join_score)
+                #print(f"[DEBUG] Action {i}: join score = {join_score}, action_feature sum = {action_feature.sum().item()}")
+
+            # Choose the action with the smallest join score
+            selected_action_index = torch.argmin(torch.tensor(join_scores)).item()
+            #print(f"[DEBUG] Exploring: Selected action {selected_action_index} with min join score {join_scores[selected_action_index]}")
+
+            # Update the step image with the selected action features
+            self.step_images[step_index] += action_features[selected_action_index].squeeze(0).to(self.device)
+            #print(f"[DEBUG] Updated step image for step {step_index}")
+
+        return selected_action_index
+
+
+
+    
+    
+class Softmax:
+    def __init__(self, temp_start=1, temp_end=0.1, decay=0.99, episode=0):
+        self.temp = (temp_start - temp_end) * (decay ** episode) + temp_end
+        self.eps_start = temp_start
+        self.eps_end = temp_end
+        self.decay = decay
+
+    def step(self):
+        self.temp = (self.temp - self.temp_end) * self.decay + self.temp_end
+        return self
+
+    def __call__(self, q_values, *args, **kwargs): # Should be normalize the q values before sampling ?
+        exp_q = torch.exp(q_values / self.temp)
+        prob = exp_q / exp_q.sum()
+
+        
+        return np.random.choice(prob)
 
 
 def train_policy_net(policy_net, target_net, optimizer, replay_buffer, gamma, loss_fct='mse_q_values', scheduler=None, n_steps=10, batch_size=16, verbose=False, device='cuda'):
@@ -143,7 +195,7 @@ def train_policy_net(policy_net, target_net, optimizer, replay_buffer, gamma, lo
                     batch.next_obstacle_features
                 )
             # compute argmax actions
-            num_actions = [len(actions) for actions in batch.next_available_actions]
+            num_actions = [max(1, len(actions)) for actions in batch.next_available_actions]
             offsets = np.cumsum([0] + num_actions)
             selected_actions = [chunk.argmax().item() + offset for chunk, offset in zip(next_q_values.split(num_actions), offsets)]
 
@@ -180,9 +232,25 @@ def train_policy_net(policy_net, target_net, optimizer, replay_buffer, gamma, lo
             #plt.figure()
             #plt.imshow(state_target[0])
             loss += mse(succ_block_features[:,0], state_target)
+            
+            if verbose:
+                num_transitions = 3
+                num_plots = 6
+                fig, axes = plt.subplots(num_transitions, num_plots, figsize=(2 * num_plots, 2 * num_transitions))
+                for i in range(num_transitions):
+                    axes[i,0].imshow(batch.block_features.squeeze(1)[i]) # s_t
+                    axes[i,1].imshow(batch.action_features.squeeze(1)[i]) # a_t
+                    axes[i,2].imshow(batch.next_block_features.squeeze(1)[selected_actions[i]]) # s_t+1
+                    axes[i,3].imshow(batch.next_actions_features.squeeze(1)[selected_actions[i]]) # a_t+1^*
+                    axes[i,4].imshow(succ_block_features[i,0].detach().cpu())
+                    axes[i,5].imshow(state_target[i].detach().cpu())
+                    
+                plt.show()
+            
+            
             #loss += mse(succ_block_features.softmax(dim=1)[:,1], state_target)
 
-            loss += F.binary_cross_entropy(succ_binary_features[:,0], batch.next_binary_features[selected_actions,0]) # only assesses immediate stability (gamma=0) 
+            #loss += F.binary_cross_entropy(succ_binary_features[:,0], batch.next_binary_features[selected_actions,0]) # only assesses immediate stability (gamma=0) 
         
         # cross_entropy = torch.nn.CrossEntropyLoss()
         # state feature cross-entropy loss
@@ -219,62 +287,48 @@ def update_target_net(policy_net, target_net, tau=0.01):
         target_net_state_dict[key] = policy_net_state_dict[key] * tau + target_net_state_dict[key]* (1 - tau)
     target_net.load_state_dict(target_net_state_dict)
 
-
-def rollout_episode(env, policy, policy_net, x_discr_ground, setup_fct, offset_values=[0.], img_size=(64, 64), xlim=(0,1), ylim=(0,1), log_images=False, device=None):
+def rollout_episode_scripted(env, predefined_actions, setup_fct, x_discr_ground, offset_values=[0.], img_size=(64, 64), xlim = (-3, 7), ylim = (0., 10), log_images=False, device=None):
     """
-    Roll out a single episode using the policy and the policy network.
+    Roll out a single episode using predefined actions.
     """
     done = False
     transitions = []
     images = [] if log_images else None
-    policy_net.eval()
 
-    # environment reset
+    # Environment reset
     obs, info = env.reset(**setup_fct())
 
-    # initial features and actions
+    # Initial features and actions
     reward_features, obstacle_features = get_task_features(obs, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
     block_features, binary_features = get_state_features(obs, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
     available_actions = [*generate_actions(env, x_discr_ground=x_discr_ground, offset_values=offset_values)]
     action_features = get_action_features(env, available_actions, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
-    available_actions, action_features = filter_actions(available_actions, action_features, block_features, obstacle_features)
-    num_actions = len(available_actions)
+    available_actions, action_features = filter_actions(env,available_actions, action_features, block_features=block_features, obstacle_features=obstacle_features,xlim=xlim, ylim=ylim)
 
+    action_index = 0  # Track predefined actions
 
-    print("block_features:", block_features.shape)
-    print("binary_features:", binary_features.shape)
-    print("action_features:", action_features.shape)
-    print("reward_features:", reward_features.shape)
-    print("obstacle_features:", obstacle_features.shape)
+    while not done and action_index < len(predefined_actions):
+        action = predefined_actions[action_index]
+        action_index += 1
 
-    while not done:
-        # action and environment step
-        with torch.no_grad():
-            q_values, succ_block_features, succ_binary_features = policy_net(block_features.expand(num_actions, -1, -1, -1),
-                                                   binary_features.expand(num_actions, -1),
-                                                   action_features, 
-                                                   reward_features.expand(num_actions, -1, -1, -1),
-                                                   obstacle_features.expand(num_actions, -1, -1, -1))
-        selected_action_index = policy(q_values, succ_block_features, succ_binary_features)
-        action = available_actions[selected_action_index]
-        selected_action_features = action_features[selected_action_index]
+        selected_action_features = get_action_features(env, [action], img_size=img_size, device=device, xlim=xlim, ylim=ylim)[0]
         next_observation, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
-        # note: we compute our own (linear) reward function here
+        # Compute linear reward function
         lin_reward = torch.sum(selected_action_features * reward_features)
 
-        # get next features and actions
+        # Get next features and actions
         next_block_features, next_binary_features = get_state_features(next_observation, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
         next_available_actions = [*generate_actions(env, x_discr_ground=x_discr_ground, offset_values=offset_values)]
         next_action_features = get_action_features(env, next_available_actions, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
-        next_available_actions, next_action_features = filter_actions(next_available_actions, next_action_features, next_block_features, obstacle_features)
+        next_available_actions, next_action_features = filter_actions(env,next_available_actions, next_action_features, next_block_features, obstacle_features=obstacle_features, xlim=xlim, ylim=ylim)
         num_actions = len(next_available_actions)
-        
-        # add transition
+
+        # Add transition
         transitions.append(Transition(
-            block_features=block_features.unsqueeze(0),  # add batch dimension
+            block_features=block_features.unsqueeze(0),  # Add batch dimension
             binary_features=binary_features.unsqueeze(0),
-            action_features=action_features[selected_action_index].unsqueeze(0),
+            action_features=selected_action_features.unsqueeze(0),
             reward_features=reward_features.unsqueeze(0),
             obstacle_features=obstacle_features.unsqueeze(0),
             action=action,
@@ -284,23 +338,22 @@ def rollout_episode(env, policy, policy_net, x_discr_ground, setup_fct, offset_v
             next_block_features=next_block_features.expand(num_actions, -1, -1, -1),
             next_binary_features=next_binary_features.expand(num_actions, -1),
             next_actions_features=next_action_features,
-            next_reward_features=reward_features.expand(num_actions, -1, -1, -1),  # duplicated for convenience
-            next_obstacle_features=obstacle_features.expand(num_actions, -1, -1, -1),  # duplicated for convenience
+            next_reward_features=reward_features.expand(num_actions, -1, -1, -1),  # Duplicated for convenience
+            next_obstacle_features=obstacle_features.expand(num_actions, -1, -1, -1),  # Duplicated for convenience
             next_available_actions=next_available_actions,
+            td_error=0
         ))
 
-        # update features and actions
+        # Update features and actions
         block_features = next_block_features
         binary_features = next_binary_features
         action_features = next_action_features
         available_actions = next_available_actions
 
-        # record additional information
+        # Record additional information
         if log_images:
             img_dict = dict()
-            if succ_block_features is None:
-                raise ValueError("No successor block features available from the chosen policy net. Disable image logging or use a different model.")
-            img_dict['succ_block_features'] = succ_block_features[selected_action_index][0].cpu().numpy()
+            img_dict['succ_block_features'] = next_block_features[0].cpu().numpy()
             env.assembly_env.simulate(steps=240)
             img_dict['env_render'] = get_rgb_array(near=0.001, fov=80, far=10, target=[0.5, 0, 0.1], pitch=-20)
             env.assembly_env.restore()
@@ -309,7 +362,117 @@ def rollout_episode(env, policy, policy_net, x_discr_ground, setup_fct, offset_v
     return transitions, images
 
 
+def rollout_episode(env, policy, policy_net, x_discr_ground, setup_fct, offset_values=[0.], img_size=(64, 64), xlim=(0,1), ylim=(0,1), log_images=False, device=None):
+    done = False
+    transitions = []
+    images = [] if log_images else None
+    policy_net.eval()
 
+    obs, info = env.reset(**setup_fct())
+
+    reward_features, obstacle_features = get_task_features(obs, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
+    block_features, binary_features = get_state_features(obs, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
+    available_actions = [*generate_actions(env, x_discr_ground=x_discr_ground, offset_values=offset_values)]
+    action_features = get_action_features(env, available_actions, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
+    available_actions, action_features = filter_actions(env, available_actions, action_features, block_features=block_features, obstacle_features=obstacle_features, xlim=xlim, ylim=ylim)
+    num_actions = len(available_actions)
+    
+    step_index = 0
+
+    while not done:
+        with torch.no_grad():
+            q_values, succ_block_features, succ_binary_features = policy_net(block_features.expand(num_actions, -1, -1, -1),
+                                                   binary_features.expand(num_actions, -1),
+                                                   action_features, 
+                                                   reward_features.expand(num_actions, -1, -1, -1),
+                                                   obstacle_features.expand(num_actions, -1, -1, -1))
+        selected_action_index = policy(q_values, step_index, action_features, succ_block_features, succ_binary_features)
+        action = available_actions[selected_action_index]
+        selected_action_features = action_features[selected_action_index]
+        next_observation, reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
+
+        frozen_stable, unfrozen_stable = env.stabilities_freezing()
+
+        lin_reward = torch.zeros(1, device=device).view(-1)
+        if frozen_stable:
+            lin_reward = torch.sum(selected_action_features * reward_features).view(-1) / 100
+        if unfrozen_stable:
+            lin_reward = torch.sum(selected_action_features * reward_features).view(-1)
+
+        next_block_features, next_binary_features = get_state_features(next_observation, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
+        next_available_actions = [*generate_actions(env, x_discr_ground=x_discr_ground, offset_values=offset_values)]
+        next_action_features = get_action_features(env, next_available_actions, img_size=img_size, device=device, xlim=xlim, ylim=ylim)
+        next_available_actions, next_action_features = filter_actions(env, next_available_actions, next_action_features, block_features=next_block_features, obstacle_features=obstacle_features, xlim=xlim, ylim=ylim)
+        num_actions = len(next_available_actions)
+
+        if len(next_available_actions) == 0:
+            done = True
+            next_action_features = torch.zeros([1, 1, *img_size], device=device)
+
+        with torch.no_grad():
+            q_value = q_values[selected_action_index].item()
+            if not done:
+                next_q_values, _, _ = policy_net(next_block_features.expand(num_actions, -1, -1, -1),
+                                                 next_binary_features.expand(num_actions, -1),
+                                                 next_action_features, 
+                                                 reward_features.expand(num_actions, -1, -1, -1),
+                                                 obstacle_features.expand(num_actions, -1, -1, -1))
+                next_q_value = next_q_values.max().item()
+            else:
+                next_q_value = 0
+
+            expected_q_value = reward + 0.95 * next_q_value
+            td_error = abs(q_value - expected_q_value)
+
+        transitions.append(Transition(
+            block_features=block_features.unsqueeze(0),
+            binary_features=binary_features.unsqueeze(0),
+            action_features=action_features[selected_action_index].unsqueeze(0),
+            reward_features=reward_features.unsqueeze(0),
+            obstacle_features=obstacle_features.unsqueeze(0),
+            action=action,
+            lin_reward=lin_reward.unsqueeze(0),
+            reward=torch.Tensor([reward]),
+            done=done,
+            next_block_features=next_block_features.expand(max(1,num_actions), -1, -1, -1),
+            next_binary_features=next_binary_features.expand(max(1,num_actions), -1),
+            next_actions_features=next_action_features,
+            next_reward_features=reward_features.expand(max(1,num_actions), -1, -1, -1),
+            next_obstacle_features=obstacle_features.expand(max(1,num_actions), -1, -1, -1),
+            next_available_actions=next_available_actions,
+            td_error=td_error,
+        ))
+
+        block_features = next_block_features
+        binary_features = next_binary_features
+        action_features = next_action_features
+        available_actions = next_available_actions
+
+        if log_images:
+            img_dict = dict()
+            if succ_block_features is None:
+                raise ValueError("No successor block features available from the chosen policy net. Disable image logging or use a different model.")
+            img_dict['succ_block_features'] = succ_block_features[selected_action_index][0].cpu().numpy()
+
+            if env.assembly_env.client is not None:
+                env.assembly_env.simulate(steps=240)
+                img_dict['env_render'] = get_rgb_array(near=0.001, fov=80, far=10, target=[0.5, 0, 0.1], pitch=-20)
+                env.assembly_env.restore()
+            else:
+                fig, ax = plt.subplots(figsize=(5, 5), frameon=False)
+                ax.set_axis_off()
+                fig, ax = plot_cra_assembly(env, plot_forces=False, fig=fig, ax=ax)
+                fig.subplots_adjust(bottom=0, left=0, right=1, top=1)
+                fig.canvas.draw()
+                rgb_array = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape(fig.canvas.get_width_height()[::-1] + (4,))
+                plt.close(fig)
+                img_dict['env_render'] = rgb_array
+            images.append(img_dict)
+
+        step_index += 1
+
+    return transitions, images
 
 
 
@@ -340,76 +503,37 @@ def log_episode(episode, transitions, losses, gamma, context='training', policy=
 
     if log_images:
         num_transitions = len(transitions)
-        num_plots = 6
-        fig, axes = plt.subplots(num_transitions, num_plots, figsize=(2 * num_plots, 2 * num_transitions))
-        
-        # Ensure axes is a 2D array
-        if num_transitions == 1:
-            axes = np.expand_dims(axes, 0)
-        elif num_plots == 1:
-            axes = np.expand_dims(axes, -1)
-        
-        print(f"Figure and Axes structure: fig type: {type(fig)}, axes type: {type(axes)}")
-        if isinstance(axes, np.ndarray):
-            print(f"Axes shape: {axes.shape}")
-            print(f"First axes element type: {type(axes[0])}")
-            if isinstance(axes[0], np.ndarray):
-                print(f"First axes element shape: {axes[0].shape}")
-
+        num_plots = 7  # Increased by 1 for annotations
+        fig, axes = plt.subplots(num_transitions + 1, num_plots, figsize=(2 * num_plots, 2 * (num_transitions + 1)))
         for i, t in enumerate(transitions):
             if verbose:
-                print(f"Transition {i}, reward: {t.reward[0]}")
-                print(f"Block features shape: {t.block_features.shape}")
-                print(f"Action features shape: {t.action_features.shape}")
-                print(f"Reward features shape: {t.reward_features.shape}")
-                print(f"Obstacle features shape: {t.obstacle_features.shape}")
-                print(f"Block features data: {t.block_features}")
-                print(f"Action features data: {t.action_features}")
-                print(f"Reward features data: {t.reward_features}")
-                print(f"Obstacle features data: {t.obstacle_features}")
-            
-            # Ensure the features are 2D
-            block_features = t.block_features.squeeze().cpu().numpy()
-            if block_features.ndim == 1:
-                block_features = block_features.reshape(1, -1)
-            
-            action_features = t.action_features.squeeze().cpu().numpy()
-            if action_features.ndim == 1:
-                action_features = action_features.reshape(1, -1)
-            
-            reward_features = t.reward_features.squeeze().cpu().numpy()
-            if reward_features.ndim == 1:
-                reward_features = reward_features.reshape(1, -1)
-            
-            obstacle_features = t.obstacle_features.squeeze().cpu().numpy()
-            if obstacle_features.ndim == 1:
-                obstacle_features = obstacle_features.reshape(1, -1)
-            
-            # Debug prints immediately before imshow
-            print(f"Plotting transition {i}, block features shape: {block_features.shape}")
-            print(f"Plotting transition {i}, action features shape: {action_features.shape}")
-            print(f"Plotting transition {i}, reward features shape: {reward_features.shape}")
-            print(f"Plotting transition {i}, obstacle features shape: {obstacle_features.shape}")
-            try:
-                axes[i, 0].imshow(block_features, cmap='gray', vmin=0, vmax=1)
-                axes[i, 1].imshow(block_features + action_features, cmap='gray', vmin=0, vmax=1)
-                axes[i, 2].imshow(reward_features, cmap='gray')
-                axes[i, 3].imshow(obstacle_features, cmap='gray', vmin=0, vmax=1)
-                if images:
-                    axes[i, 4].imshow(images[i]['succ_block_features'], vmin=0, vmax=1, cmap='gray')
+                print(t.reward[0])
+            axes[i, 0].imshow(t.block_features.squeeze().cpu().numpy(), cmap='gray', vmin=0, vmax=1)
+            axes[i, 1].imshow(t.block_features.squeeze().cpu().numpy() + t.action_features.squeeze().cpu().numpy(), cmap='gray', vmin=0, vmax=1)
+            axes[i, 2].imshow(t.reward_features.squeeze().cpu().numpy(), cmap='gray')
+            axes[i, 3].imshow(t.obstacle_features.squeeze().cpu().numpy(), cmap='gray', vmin=0, vmax=1)
+            if images:
+                axes[i, 4].imshow(images[i]['succ_block_features'], vmin=0, vmax=1, cmap='gray')
+                if 'env_render' in images[i]:
                     axes[i, 5].imshow(images[i]['env_render'])
-            except IndexError as e:
-                print(f"IndexError occurred at transition {i}: {e}")
-                print(f"axes shape: {axes.shape} | accessing axes[{i}, 0]")
 
+            # Add text annotations for reward, lin_reward, and stability in a separate column
+            axes[i, 6].text(0.5, 0.5, f'Reward: {t.reward.item():.2f}\nLin Reward: {t.lin_reward.item():.2f}\nStable: {t.next_binary_features[0, 0].item()}', 
+                            fontsize=8, ha='center', va='center', transform=axes[i, 6].transAxes)
+
+        # Add episode-level reward and lin_reward at the bottom
+        axes[num_transitions, 6].text(0.5, 0.5, f'Total Reward: {reward:.2f}\nTotal Lin Reward: {lin_reward:.2f}',
+                                      fontsize=10, ha='center', va='center', transform=axes[num_transitions, 6].transAxes)
+        
         axes[0, 0].set_title('Block Features')
         axes[0, 1].set_title('Next state Features')
         axes[0, 2].set_title('Reward Features')
         axes[0, 3].set_title('Obstacle Features')
         if images:
             axes[0, 4].set_title('Successor Features')
-            axes[0, 5].set_title('Environment Render')
-        
+            # axes[0, 5].set_title('Environment Render')
+        axes[0, 6].set_title('Annotations')
+
         for ax in axes.flatten():
             ax.axis('off')
 
@@ -427,21 +551,20 @@ def log_episode(episode, transitions, losses, gamma, context='training', policy=
             aim_run.track(aim_figure, name=f"Images", step=episode, context=dict(context=context))  
         
     if wandb_run is not None:
-        raise NotImplementedError("Wandb logging not implemented.")
-        wandb_run.log(context=context, episode=episode, **log_info)
+        log_name = f"episode_{str(episode).zfill(5)}"
+        wandb.log({
+            "episode": episode,
+            "reward": reward,
+            "lin_reward": lin_reward,
+            "avg_loss": avg_loss,
+            "num_steps": num_steps,
+            "stable": stable,
+            "collision": collision,
+            f"{log_name}_combined_image": wandb.Image(fig) if log_images else None,
+            "eval_reward": lin_reward if context == 'evaluation' else None
+        })
 
     return log_info, fig
-
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
@@ -458,7 +581,7 @@ if __name__ == '__main__':
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size.")
     parser.add_argument("--gamma", type=float, default=0.8, help="Discount factor.")
     parser.add_argument("--model", choices=['SuccessorMLP', 'ConvNet', 'UNet'], default='UNet', help="Model type.")
-    parser.add_argument("--device", choices=['cpu', 'cuda'], default='cuda', help="Device to use.")
+    parser.add_argument("--device", choices=['cpu', 'cuda'], default='cpu', help="Device to use.")
     parser.add_argument("--image_size", type=parse_img_size, default="64x64", help="Size of image features {width}x{height}.")
     parser.add_argument("--load_checkpoint", type=str, default=None, help="Path to a checkpoint to load.")
     parser.add_argument("--save_checkpoint", type=str, default=None, help="Path to save the checkpoint.")
@@ -466,12 +589,11 @@ if __name__ == '__main__':
     parser.add_argument("--evaluate_every", type=int, default=100, help="")
     parser.add_argument("--aim", action='store_true', help="Use aim logging.")
     parser.add_argument("--aim_repo", type=str, default='aim-data/', help="Path to aim repository.")
-    parser.add_argument("--tower_height", type=int, default=2, help="Height of the tower.")
+    parser.add_argument("--bridge_length", type=int, default=1, help="Length of the bridge in blocks")
     parser.add_argument("--verbose", action='store_true', help="Verbose output.")
     parser.add_argument("--log_images", action='store_true', help="Log images.")
     parser.add_argument("--replay_buffer_capacity", type=int, default=2000, help="Replay buffer capacity.")
-
-    # parser.add_argument("--wandb", type=bool, default=False, help="Use wandb logging.")
+    parser.add_argument("--wandb", type=bool, default=False, help="Use wandb logging.")
 
     # parse arguments
     args = vars(parser.parse_args())
@@ -486,18 +608,19 @@ if __name__ == '__main__':
         torch.manual_seed(args['seed'])
 
     # initialize environment
-    x_discr_ground = np.linspace(0.4, 0.6, 9)
+    x_discr_ground = np.linspace(-2, 0, 10)
+    #x_discr_ground = [-0.9]
     offset_values = [0]
     
-    xlim = (0.25, 0.75)
-    ylim = (0., 0.5)
-    def setup_fct():
-        tower_height = 0.02 + 0.05 * args['tower_height']
-        return bridge_setup(num_stories=1)
-        #return tower_setup(targets=[(random.choice(x_discr_ground), 0, tower_height)])
+    xlim = (-3, 7)
+    ylim = (0., 10)
+    
+    #will be defined later
+    """def setup_fct():
+        return horizontal_bridge_setup(num_obstacles=args['bridge_length'])
     
     env = AssemblyGym(reward_fct=sparse_reward, max_steps=args['max_steps'], restrict_2d=True, assembly_env=AssemblyEnv(render=False))
-    
+    """
     # initialize models and optimizer
     if args['model'] == 'SuccessorMLP':
         hidden_dims = [256, 128, 64, 128, 256]
@@ -517,10 +640,17 @@ if __name__ == '__main__':
     target_net.load_state_dict(policy_net.state_dict())
 
     # initialize replay buffer
-    replay_buffer = ReplayBuffer(capacity=args['replay_buffer_capacity'])
-    
+    replay_buffer = ReplayBuffer(
+        capacity=args['replay_buffer_capacity'],
+    )
+
+    # replay_buffer = ReplayBuffer(
+    #     capacity=args['replay_buffer_capacity']
+    # )
+
     episode = 0
     aim_run=None
+    wandb_run=None
     if args['load_checkpoint']:
         raise NotImplementedError("Loading checkpoints is not tested.")
         print("loading checkpoint...")
@@ -540,6 +670,8 @@ if __name__ == '__main__':
     else:
         if args['aim']:
             aim_run = aim.Run(experiment="SuccessorQLearning", repo=args['aim_repo'])
+        if args['wandb']:
+            wandb_run = wandb.init(project="dual_arm", config=args)
 
     # define policies
     eps_greedy = EpsilonGreedy(eps_start=0.5, gamma=0.999, eps_end=0.05, episode=episode)
@@ -547,23 +679,40 @@ if __name__ == '__main__':
 
 
     # main training loop
+    #for j in range(1,4):
+
+
+
+    # ths part can go into the function
+
+    def setup_fct():
+        return horizontal_bridge_setup(num_obstacles=args['bridge_length'])
+    
+
+    j = 1
+    #temporary test:
+    curr_lr = args['learning_rate']
+    env = AssemblyGym(reward_fct=sparse_reward, max_steps=args['max_steps'], restrict_2d=True, assembly_env=AssemblyEnv(render=False))
+    optimizer = torch.optim.Adam(policy_net.parameters(), lr=curr_lr)
     it = tqdm(range(episode + 1, episode + args['num_episodes'] + 1), disable=not verbose)
     for i in it:
         eval_round = (i % args['evaluate_every'] == 0)
 
         # rollout episde
         transitions, images = rollout_episode(env=env, 
-                                      policy=eps_greedy.step(), 
-                                      policy_net=policy_net,
-                                      setup_fct=setup_fct, 
-                                      x_discr_ground=x_discr_ground,
-                                      offset_values=offset_values,
-                                      img_size=args['image_size'],
-                                      device=device,
-                                      log_images=args['log_images'] and eval_round)
+                                    policy=eps_greedy.step(), 
+                                    policy_net=policy_net,
+                                    setup_fct=setup_fct, 
+                                    x_discr_ground=x_discr_ground,
+                                    xlim=xlim,
+                                    ylim=ylim,
+                                    offset_values=offset_values,
+                                    img_size=args['image_size'],
+                                    device=device,
+                                    log_images=args['log_images'])
         # add transistions to replay buffer
         replay_buffer.push(transitions)
-      
+    
         # train policy net for n steps
         losses = train_policy_net(policy_net=policy_net, 
                     target_net=target_net, 
@@ -585,12 +734,14 @@ if __name__ == '__main__':
             transitions=transitions,
             images=images,
             policy=eps_greedy,
-            log_images=args['log_images'] and eval_round, 
+            log_images=args['log_images'], 
             losses=losses,
             context='training',
             gamma=gamma,
-            aim_run=aim_run
+            aim_run=aim_run,
+            wandb_run=wandb_run
         )
+
         plt.close(fig)
         it.set_postfix(episode=i, **log_info)
 
@@ -598,13 +749,16 @@ if __name__ == '__main__':
         if eval_round:
             # evaluate
             transitions, images = rollout_episode(env=env, 
-                                      policy=greedy, 
-                                      policy_net=policy_net, 
-                                      setup_fct=setup_fct, 
-                                      x_discr_ground=x_discr_ground, 
-                                      img_size=args['image_size'],
-                                      device=device,
-                                      log_images=args['log_images'])
+                                        policy=greedy, 
+                                        policy_net=policy_net,
+                                        setup_fct=setup_fct, 
+                                        x_discr_ground=x_discr_ground,
+                                        xlim=xlim,
+                                        ylim=ylim,
+                                        offset_values=offset_values,
+                                        img_size=args['image_size'],
+                                        device=device,
+                                        log_images=args['log_images'])
 
             log_info, fig = log_episode(
                 episode=i,
@@ -614,7 +768,8 @@ if __name__ == '__main__':
                 losses=None,
                 context='evaluation',
                 gamma=gamma,
-                aim_run=aim_run
+                aim_run=aim_run,
+                wandb_run=wandb_run
             )
             plt.close(fig)
 
@@ -625,16 +780,13 @@ if __name__ == '__main__':
 
             it.set_postfix(episode=episode, **log_info)
 
-        # save checkpoint
-        if args['save_checkpoint'] and i % args['checkpoint_every'] == 0:
-            save_checkpoint(path=args['save_checkpoint'], 
-                            policy_net=policy_net, 
-                            target_net=target_net, 
-                            replay_buffer=replay_buffer, 
-                            optimizer=optimizer, 
-                            episode=i,
-                            config=args)
-            if args['verbose']:
-                print(f"Checkpoint saved on episode {i}.")
 
-       
+    save = False
+    if(save):
+        torch.save(policy_net.state_dict(), os.path.join('', 'policy_net.pth'))
+        print("saved.")
+
+
+
+
+    

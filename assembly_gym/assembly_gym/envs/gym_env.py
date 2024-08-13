@@ -1,16 +1,19 @@
-from collections import namedtuple
+from dataclasses import dataclass
 import numpy as np
 import gymnasium as gym
 from compas.geometry import Quaternion
-
+import matplotlib.pyplot as plt
 from assembly_gym.envs.assembly_env import AssemblyEnv, Block, Shape
-from assembly_gym.utils import align_frames_2d, distance_box_point
-from assembly_gym.utils.rendering import get_rgb_array
+from assembly_gym.utils.geometry import align_frames_2d, distance_box_point
+from assembly_gym.utils.rendering import get_rgb_array, plot_assembly_env
 
 
 def sparse_reward(gym_env, obs, info):
+
     if gym_env.assembly_env.state_info['collision'] or not gym_env.assembly_env.state_info['stable']:
         return -1
+    
+
 
     num_targets_reached = len(obs['targets_reached'])
     if not gym_env.all_targets_reached(): 
@@ -18,26 +21,38 @@ def sparse_reward(gym_env, obs, info):
 
     return num_targets_reached
 
-def cliff_setup(H=0.04, num_obstacles=5, rescale=1.):
-    # Define the shape
-    trapezoid = Shape(urdf_file='shapes/trapezoid.urdf', name="trapezoid")
-    trapezoid.scale(rescale)
-    shapes = [trapezoid]
 
-    # Define the targets and obstacles
-    # In this setup, obstacles are stacked horizontally along the x-axis
-    x_start = 0.1  # starting x position for the obstacles
-    targets = [(x_start + num_obstacles * H, 0, H / 2)]  # target is at the end of the horizontal stack
-    obstacles = [(x_start + i * H, 0, H / 2) for i in range(num_obstacles)]
+def horizontal_bridge_setup(square_size=0.6, num_obstacles=5, trapezoid=True, hexagon=False):
+    shapes = []
+    if trapezoid:
+        trapezoid = Shape(urdf_file='shapes/trapezoid.urdf', name="trapezoid")
+        shapes.append(trapezoid)
+
+    if hexagon:
+        hexagon = Shape(urdf_file='shapes/hexagon.urdf', name="hexagon")
+        shapes.append(hexagon)
+
+    # Start point on the left, reward on the right
+    reward_x = num_obstacles * square_size + 2.5 * square_size
+
+    # Define targets and obstacles positions
+    targets = [(reward_x, 0, square_size / 2)]
+    obstacles = [(i * square_size, 0, square_size / 2) for i in range(1, num_obstacles + 1)]
 
     return dict(shapes=shapes, obstacles=obstacles, targets=targets)
 
 
 
-def bridge_setup(H=0.04, num_stories=1, rescale=1.):
-    trapezoid = Shape(urdf_file='shapes/trapezoid.urdf', name="trapezoid")
-    trapezoid.scale(rescale)
-    shapes = [trapezoid]
+def bridge_setup(H=.8, num_stories=1, trapezoid=True, hexagon=False):
+    shapes = []
+    if trapezoid:
+        trapezoid = Shape(urdf_file='shapes/trapezoid.urdf', name="trapezoid")
+        shapes.append(trapezoid)
+
+    if hexagon:
+        hexagon = Shape(urdf_file='shapes/hexagon.urdf', name="hexagon")
+        shapes.append(hexagon)
+   
     targets = [ (0.5 , 0, num_stories * H + H/2) ]
     obstacles = [(targets[0][0], 0., i*H + H/2) for i in range(num_stories)]
     #targets = [ (0.5 , 0, np.random.uniform(0.07, 0.12)) ]
@@ -48,15 +63,17 @@ def bridge_setup(H=0.04, num_stories=1, rescale=1.):
 
 def tower_setup(num_targets = 3, targets=None):
     if targets is None:
-        x_min = 0.3
-        x_max = 0.7
+        x_min = -4
+        x_max = 4
         z_min = 0.
-        z_max = 0.3
+        z_max = 4
 
         targets = [(np.random.uniform(x_min, x_max), 0, np.random.uniform(z_min, z_max)) for _ in range(num_targets)]
-    cube = Shape(urdf_file='shapes/cube.urdf', name="cube", receiving_faces_2d=[3], target_faces_2d=[1])
+
+    cube = Shape(urdf_file='shapes/cube1.urdf', name="cube", receiving_faces_2d=[3], target_faces_2d=[1])
     rectangle = Shape(urdf_file='shapes/block.urdf', name="rectangle", receiving_faces_2d=[3], target_faces_2d=[0])
-    shapes = [cube, rectangle]
+    trapezoid = Shape(urdf_file='shapes/trapezoid.urdf', name="trapezoid")
+    shapes = [trapezoid] # [cube, rectangle]
     obstacles = []
     #obstacles = [[targets[0][0], 0, 0.02]]
     return dict(shapes=shapes, obstacles=obstacles, targets=targets)
@@ -64,16 +81,16 @@ def tower_setup(num_targets = 3, targets=None):
 
 def hard_tower_setup():
     trapezoid = Shape(urdf_file='shapes/trapezoid.urdf', name="trapezoid")
-    cube = Shape(urdf_file='shapes/cube.urdf', name="cube", receiving_faces_2d=[0], target_faces_2d=[2])
+    cube = Shape(urdf_file='shapes/cube1.urdf', name="cube", receiving_faces_2d=[0], target_faces_2d=[2])
     shapes = [trapezoid, cube]
-    targets = [[0.2, 0, 0], [0.2, 0, 0.3]]
-    obstacles = [[0.2, 0, 0.1]]
+    targets = [[0, 0, 0.5], [0, 0, 5.5]]
+    obstacles = [[0, 0, 2.0]]
     return dict(shapes=shapes, obstacles=obstacles, targets=targets)
 
 
 def connecting_setup(): # Similar as the connecting setup in Deepmind's paper
     rectangle = Shape(urdf_file='shapes/block.urdf', name="rectangle", receiving_faces_2d=[3], target_faces_2d=[0])
-    cube = Shape(urdf_file='shapes/cube.urdf', name="cube", receiving_faces_2d=[3], target_faces_2d=[1])
+    cube = Shape(urdf_file='shapes/cube1.urdf', name="cube", receiving_faces_2d=[3], target_faces_2d=[1])
     shapes = [rectangle, cube]
     targets = [[np.random.uniform(0.4, 0.6), 0, 0.175], [np.random.uniform(0.4, 0.6), 0, 0.175], [np.random.uniform(0.4, 0.6), 0, 0.175]]
     obstacles = [[np.random.uniform(0.4, 0.47), 0, np.random.uniform(0.025, 0.125)], [np.random.uniform(0.53, 0.6), 0, np.random.uniform(0.025, 0.125)]]
@@ -82,8 +99,15 @@ def connecting_setup(): # Similar as the connecting setup in Deepmind's paper
     return dict(shapes=shapes, obstacles=obstacles, targets=targets)
 
 
-Action = namedtuple('Action', ('target_block', 'target_face', 'shape', 'face', 'offset_x', 'offset_y'))
-
+@dataclass
+class Action:
+    target_block: int
+    target_face: int
+    shape: int
+    face: int
+    offset_x: float = 0.
+    offset_y: float = 0.
+    frozen: bool = False
 
 class AssemblyGym(gym.Env):
     # gym metadata
@@ -153,11 +177,10 @@ class AssemblyGym(gym.Env):
 
 
     def _get_obs(self):
-        # TODO: Do we really need to deepcopy these?
         return {
             'blocks': self.blocks,
-            'stable': int(self.assembly_env.state_info['stable']),
-            'collision': int(self.assembly_env.state_info['collision']),
+            'stable': bool(self.assembly_env.state_info['stable']),
+            'collision': bool(self.assembly_env.state_info['collision']),
             'collision_block': bool(self.assembly_env.state_info['collision_info']['blocks']),
             'collision_obstacle': bool(self.assembly_env.state_info['collision_info']['obstacles']),
             'collision_floor': bool(self.assembly_env.state_info['collision_info']['floor']),
@@ -176,38 +199,7 @@ class AssemblyGym(gym.Env):
             'blocks_initial_state' : self.assembly_env.state_info.get('pybullet_initial_state'),
             'blocks_final_state' : self.assembly_env.state_info.get('pybullet_final_state'),
         }
-    
-    # TODO: Previous implementation for refernce, we can do this computation outside the environment to keep the inferface simple
-    # def _get_block_index(self, blocks, target_shape, target_shape_index):
-    #     if target_shape == -1:
-    #         return -1
-    #     shape_count = 0
-    #     additional_blocks = 0
-    #     for b in blocks:
-    #         if b[-1] == target_shape:
-    #             shape_count += 1
-    #             if shape_count > target_shape_index: # denotes the time when we reach the current chosen block in hte block list
-    #                 break
-    #         else:
-    #             additional_blocks += 1
-    #     target_shape_index += additional_blocks
-    #     return target_shape_index
-
-    # TODO: Currently we have create_block() below, but if needed we can have this function to get the position and orientation of the block
-    # def action_to_position(self, action):
-    #     target_shape, target_shape_index, block_face, shape, shape_face, offset_x, offset_y = action
-    #     # block_index = self._get_block_index(self.blocks, target_shape, target_shape_index)
-
-    #     # compute new block orientation by aligning the selected frames
-    #     if block_index == -1:
-    #         block_frame = self.assembly_env.get_floor_frame()
-    #     else:
-    #         block_frame = self.assembly_env.blocks[block_index].get_face_frame_2d(block_face)
-
-    #     shape_frame = self.shapes[shape].get_face_frame_2d(shape_face)
-
-    #     offset = [offset_x, 0, offset_y]
-    #     position, rotation = align_frames_2d(block_frame, shape_frame, offset)
+ 
 
     def create_block(self, action : Action):
         # compute new block orientation by aligning the selected frames
@@ -239,11 +231,18 @@ class AssemblyGym(gym.Env):
         self.block_graph[(action.target_block, action.target_face)].append((new_block_index, action.face))
         self.block_graph[(new_block_index, action.face)] = [(action.target_block, action.target_face)]
 
-        self.assembly_env.unfreeze_block()
-        self.assembly_env.freeze_block(len(self.assembly_env.blocks) - 1)
+        # unfreeze previously frozen block if needed
+        if len(self.assembly_env.blocks) > 1 and self.assembly_env.blocks[-2].is_static:
+            self.assembly_env.unfreeze_block(len(self.assembly_env.blocks) - 2)
+        
+        action.frozen=True #always freeze previously placed block, temporary to reduce action space
+        if action.frozen:
+            self.assembly_env.freeze_block(len(self.assembly_env.blocks) - 1)
         
         self._update_targets(new_block)
         self._update_action_and_obs_space()
+
+        self.assembly_env._update_state_info()
 
         # evaluate state and reward
         terminated, truncated = self.terminated(self.assembly_env)
@@ -275,7 +274,7 @@ class AssemblyGym(gym.Env):
         self.targets_remaining = self.targets.copy()
         self._update_action_and_obs_space()
 
-        small_cube = Shape(urdf_file='shapes/small_cube.urdf')
+        small_cube = Shape(urdf_file='shapes/cube06.urdf')
 
         for b in self.blocks:
             new_block = Block(self.shapes[b[-1]], b[:3], Quaternion(*b[3:7]))
@@ -301,3 +300,34 @@ class AssemblyGym(gym.Env):
 
     def close(self):
         self.assembly_env.disconnect_client()
+
+    def collision_on_action(self, action,xlim,ylim):
+        block = self.create_block(action)
+        self.assembly_env.blocks.append(block)
+
+        collisions = False
+        eps = 1e-6
+        for vertex in block.vertices:
+            if vertex[0] < xlim[0]-eps or vertex[0] > xlim[1]+eps or vertex[2] < ylim[0]-eps or vertex[2] > ylim[1]+eps:
+                collisions = True
+                break
+
+        for vertex in block.vertices:
+            if vertex[2] < -eps:
+                collisions = True
+                break
+        
+
+
+        self.assembly_env.blocks.pop() # reset the environment
+        return collisions
+    
+    def stabilities_freezing(self):
+        self.assembly_env._update_state_info()
+        stable = self.assembly_env.is_stable()
+        self.assembly_env.unfreeze_block(len(self.assembly_env.blocks) - 1)
+        self.assembly_env._update_state_info()
+        unfreezestable = self.assembly_env.is_stable()
+        self.assembly_env.freeze_block(len(self.assembly_env.blocks) - 1)
+        self.assembly_env._update_state_info()
+        return stable, unfreezestable

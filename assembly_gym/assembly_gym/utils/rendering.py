@@ -8,7 +8,7 @@ from assembly_gym.utils.geometry import block_vertices_2d
 pybullet = LazyLoader('pybullet', globals(), 'pybullet')
 
 
-def plot_assembly_env(env, fig=None, ax=None):
+def plot_assembly_env(env, fig=None, ax=None, equal=False):
     """
     Plot an assembly environment in 2d.
 
@@ -24,10 +24,12 @@ def plot_assembly_env(env, fig=None, ax=None):
         gym_env = None
 
     if fig is None or ax is None:
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(5,5) if equal else None)
+
 
     # plot ground
-    ax.axhspan(-0.01, 0, color='grey')
+    height = assembly_env.bounds[1][2] - assembly_env.bounds[0][2]
+    ax.axhspan(-0.05 * height, 0, color='grey')
 
     # plot obstacles
     for i, b in enumerate(assembly_env.obstacles):
@@ -37,8 +39,7 @@ def plot_assembly_env(env, fig=None, ax=None):
 
     # plot blocks
     for i, b in enumerate(assembly_env.blocks):
-        frozen = i == assembly_env.frozen_block_index
-        color = "tab:orange" if frozen else "tab:blue"
+        color = "tab:orange" if b.is_static else "tab:blue"
         vertices = np.array([*b.vertices_2d])
         ax.fill(vertices[:, 0], vertices[:, 1], '+', edgecolor='k', facecolor=color)
         ax.text(b.position[0], b.position[2], i, ha="center", va="center", color="w")
@@ -48,9 +49,11 @@ def plot_assembly_env(env, fig=None, ax=None):
         for t in gym_env.targets:
             ax.scatter(t[0], t[2], marker="*", s=100, color="tab:green")
 
-    # ax.axis('equal')
-    #ax.set_xlim(assembly_env.bounds[0][0], assembly_env.bounds[1][0])
-    #ax.set_ylim(assembly_env.bounds[0][2], assembly_env.bounds[1][2])
+    if equal:
+        ax.axis('equal')
+    ax.set_xlim(assembly_env.bounds[0][0], assembly_env.bounds[1][0])
+    ax.set_ylim(assembly_env.bounds[0][2], assembly_env.bounds[1][2])
+
     return fig, ax
 
 
@@ -99,28 +102,14 @@ def get_rgb_array(width=512, height=512, fov=120, near=0.02, far=10,
     return rgb_array[:, :, :3]
 
 
-def render_blocks_2d(blocks, xlim, ylim, img_size=(512, 512)):
+def render_blocks_2d(blocks, xlim, ylim, img_size=(512,512)):
     image = np.zeros(img_size, dtype=bool)
     # Note: Y axis is reversed to make image plot work without reversing the axis
     X, Y = np.meshgrid(np.linspace(*xlim, img_size[0]), np.linspace(ylim[1], ylim[0], img_size[1]))
     positions = np.vstack([X.ravel(), Y.ravel()]).T
-    
-    print("blocks:", blocks)
-    print("positions shape:", positions.shape)
-
     for block in blocks:
-        block_mask = block.contains_2d(positions).reshape(img_size)
-        image = image | block_mask
-        print(f"block_mask for block {block}:")
-        print(block_mask)
-    
-    print("hello")
-    plt.imshow(image, cmap='gray', origin='upper', extent=[xlim[0], xlim[1], ylim[0], ylim[1]])
-    plt.colorbar()
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.title('Rendered Blocks 2D')
-    plt.show()
+        image = image | block.contains_2d(positions).reshape(img_size)
+
     return image
 
 
@@ -159,14 +148,22 @@ def plot_block_movements(initial_states, final_states, bounds=None, fig=None, ax
     return fig, ax
 
 
-def plot_cra_assembly(assembly, fig=None, ax=None, plot_forces=True, force_scale=1.0, plot_edges=False, graph=None):
+def plot_cra_assembly(assembly, fig=None, ax=None, plot_forces=True, force_scale=1.0, plot_edges=False, graph=None, equal=False):
     """
     Plot the CRA assembly in 2D with forces.
     """
+    if assembly.__class__.__name__ == "AssemblyEnv":
+        bounds = assembly.bounds
+        assembly = assembly.cra_assembly
+
+    elif assembly.__class__.__name__ == "AssemblyGym":
+        bounds = assembly.assembly_env.bounds
+        assembly = assembly.assembly_env.cra_assembly
+
     if graph is None:
         graph = assembly.graph
     if fig is None:
-        fig, ax = plt.subplots(1)
+        fig, ax = plt.subplots(figsize=(5,5) if equal else None)
 
     # plot blocks
     for i, node in graph.node.items():
@@ -197,12 +194,9 @@ def plot_cra_assembly(assembly, fig=None, ax=None, plot_forces=True, force_scale
     # plot interfaces
     for interface in assembly.interfaces():
         points = [p for p in interface.points if p[1] > 0]
-        points = np.array(points)
-        if len(points) == 2:
+        if(len(points) > 1):
+            points = np.array(points)
             ax.plot(points[:, 0], points[:, 2], 'k-' ,linewidth=4)
-        else:
-            ax.scatter(points[:, 0], points[:, 2], c='k', s=10)
-            print("Warning: interface with more than 2 points")
 
     # plot forces
     if plot_forces:
@@ -226,6 +220,10 @@ def plot_cra_assembly(assembly, fig=None, ax=None, plot_forces=True, force_scale
                     # to world coordinates
                     force_vector = frame.to_world_coordinates(force_vector) - frame.point
                     ax.arrow(point[0], point[2], -force_scale * force_vector[0], -force_scale * force_vector[2], color='tab:green')
-
-    ax.axis('equal')
+    
+    if equal:
+        ax.axis('equal')
+    if bounds is not None:
+        ax.set_xlim(bounds[0][0], bounds[1][0])
+        ax.set_ylim(bounds[0][2], bounds[1][2])
     return fig, ax

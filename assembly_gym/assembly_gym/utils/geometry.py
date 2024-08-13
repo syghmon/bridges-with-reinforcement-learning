@@ -55,6 +55,20 @@ def affine_transform_vertices(vertices, shift, rotation):
     return shift + rot.apply(vertices)
 
 
+def bounding_box_collision(mesh1, mesh2):
+    box1 = mesh1.aabb()
+    box2 = mesh2.aabb()
+
+    for point in box1.points:
+        if box2.contains_point(point):
+            return True
+    
+    for point in box2.points:
+        if box1.contains_point(point):
+            return True
+    
+    return False
+
 
 def check_collision2D(shape1, shape2):  # only works in 2D: the block must be aligned wrt to the y axis
     vertices1_2d = np.delete(shape1[np.where(shape1[:, 1] > 0)], 1, 1)
@@ -100,10 +114,19 @@ def collision_rectangles(pos, state):
     return False
 
 def block_vertices_2d(block):
-    for vertex in block.vertices():
-        point = block.vertex_point(vertex)
-        if point[1] > 0:
-            yield (point[0], point[2])
+    for face, vertices in block.face.items():
+        n = block.face_normal(face)
+        if np.abs(n[1] - 1) < 1e-3:
+            break
+    
+    for i in vertices:
+        vertex = block.vertex_coordinates(i)
+        # if vertex[1] > 0:
+        yield [vertex[0], vertex[2]]
+    # for vertex in block.vertices():
+    #     point = block.vertex_point(vertex)
+    #     if point[1] > 0:
+    #         yield (point[0], point[2])
 
 
 def maximum_tension(assembly):

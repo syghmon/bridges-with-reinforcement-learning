@@ -3,11 +3,14 @@ channels:
   - conda-forge
   - pytorch
   - nvidia
+  - anaconda
 
 dependencies:
-  - python=3.11
+  - python=3.10
   - pytorch::pytorch-cuda=11.8
   - pytorch::pytorch=2.3.0
+  - anaconda::numpy=1.26.0 
+  - anaconda::mkl=2023.1.0
   - scikit-image
   - tqdm
   - matplotlib
@@ -16,11 +19,11 @@ dependencies:
   - ipywidgets
   - opencv
   - wandb
-  - pytorch
   - torchvision
   - lovely-tensors
-  - scipy=1.11.4  # pinned to make compas_fab work - https://github.com/compas-dev/compas/issues/1269
-  - gymnasium
-  - compas_fab=0.28.0
+  - scipy=1.13.0 
+  - gymnasium=0.28.1
   - shapely=2.0.3
+  - conda-forge::ipopt=3.14.16
+  - liblapack=3.9.0
 prefix: "/opt/conda"

@@ -5,7 +5,7 @@ import math
 from robotoddler.utils import *
 from assembly_gym.utils.geometry import collision_rectangles
 from shapely.geometry import Polygon
-#from assembly_gym.utils import assemble_hexagonal_ground, assemble_hexagonal_hexagonal
+#from assembly_gym.utils.geometry import assemble_hexagonal_ground, assemble_hexagonal_hexagonal
 
 class GraphAttentionLayer(nn.Module):
     def __init__(self, in_features, out_features, num_heads):

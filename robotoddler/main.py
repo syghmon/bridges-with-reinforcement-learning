@@ -7,7 +7,7 @@ import numpy as np
 from assembly_gym.envs.assembly_env import AssemblyEnv, Shape, Block
 from assembly_gym.envs.gym_env import AssemblyGym, sparse_reward, tower_setup, bridge_setup, hard_tower_setup
 
-from assembly_gym.utils import align_frames_2d
+from assembly_gym.utils.geometry import align_frames_2d
 from assembly_gym.utils.rendering import plot_assembly_env, render_assembly_env
 
 from robotoddler.DDQ import *
