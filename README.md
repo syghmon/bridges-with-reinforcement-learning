@@ -1,12 +1,12 @@
 # Building Bridges with Reinforcement Learning
 
-This repository is a fork of the original project hosted on GitLab and has been actively maintained for the last 1.5 years by Johannes Kirschner and Paul Rolland at SDSC. I had the privilege of contributing to this project as part of my bachelor thesis, which focused on leveraging reinforcement learning for autonomous robotic construction.
+This repository builds on the original project hosted on GitLab and has been actively maintained for over 1.5 years by Johannes Kirschner and Paul Rolland at the Swiss Data Science Center (SDSC). As part of my Bachelor thesis at ETH Zurich, I had the opportunity to contribute to this project, focusing on applying Reinforcement Learning (RL) to autonomous robotic construction. The project leverages high-performance computing (HPC) at CSCS (Swiss National Supercomputing Centre) to optimize RL algorithms for real-world applications in construction.
 
 ## Project Overview
 
-The construction industry has traditionally relied on labor-intensive and time-consuming processes, often susceptible to human error and inefficiencies. With advancements in robotics and artificial intelligence, new possibilities for automating construction tasks have emerged. However, traditional construction robots typically rely on precise, preprogrammed movements, which can be impractical in dynamic real-world scenarios.
+The construction industry is often hindered by labor-intensive processes and inefficiencies that can lead to costly errors and delays. Recent advancements in robotics and artificial intelligence open the door for automating complex tasks in construction. However, traditional methods rely on rigid, preprogrammed sequences, which are impractical for dynamic environments.
 
-This project aims to address these challenges by developing a dual robotic arm system capable of autonomously constructing spanning structures, such as bridges, without the need for supporting pillars. By utilizing reinforcement learning (RL), the system learns optimal behaviors through trial-and-error interactions with the environment, enabling it to adapt to dynamic, unpredictable conditions and design structures by fulfilling abstract functional goals.
+This project aims to revolutionize autonomous construction by developing a dual robotic arm system capable of building spanning structures—like bridges—without the need for supporting pillars. Using Reinforcement Learning, the robotic system learns to perform complex construction tasks through trial-and-error in simulation. The system's ability to adapt to dynamic environments and optimize bridge-building strategies is enabled through the use of Successor Features and a U-Net architecture for the RL policy network.
 
 ## Installation
 
